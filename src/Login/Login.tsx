@@ -18,36 +18,31 @@ const Login: React.FC = () => {
           alt="Amrita Logo"
         />
         <h2>Random(Compile)</h2>
+        <div className={styles.formGroup}>
+          <label htmlFor="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+          />
+        </div>
 
-        <form
-          className={styles.loginForm}
-          action="http://localhost:3000/login"
-          method="post"
-        >
-          <div className={styles.formGroup}>
-            <label htmlFor="roll_number">Username:</label>
-            <input
-              type="text"
-              id="username"
-              name="Username"
-              required
-            />
-          </div>
+        <div className={styles.formGroup}>
+          <label htmlFor="password">Password:</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+          />
+        </div>
 
-          <div className={styles.formGroup}>
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-            />
-          </div>
+        <button type="submit" className={styles.loginButton}>
+          Login
+        </button>
 
-          <button type="submit" className={styles.loginButton}>
-            Login
-          </button>
-        </form>
+        <a href="/register" className={styles.registerLink}>Register</a>
       </div>
     </div>
   );
