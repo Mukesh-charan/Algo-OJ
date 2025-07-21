@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import styles from "./Login.module.css";
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const [formData, setFormData] = useState({
-    usernameOrEmail: "", // This field will accept either username or email
+    username: "",
+    email: "",
     password: "",
   });
   const [error, setError] = useState<string>("");
-  const navigate = useNavigate(); // Navigate hook for redirection
+  const [message, setMessage] = useState<string>("");
 
-  // Handle change in input fields
+  // Initialize useNavigate
+  const navigate = useNavigate(); 
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -20,26 +23,21 @@ const Login: React.FC = () => {
     }));
   };
 
-  // Handle form submission (Login)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(""); // Reset error message
+    setMessage(""); // Reset success message
+
     try {
-      // Sending login request to the server
-      const response = await axios.post("http://localhost:8000/api/auth/login", {
-        username: formData.usernameOrEmail, // Send username or email
-        email: formData.usernameOrEmail, // Send username or email
-        password: formData.password,
-      });
-
-      // Store the token (in localStorage or other methods)
-      localStorage.setItem("token", response.data.token);
-
-      // Redirect to the home page after successful login
-      navigate("/home"); // Assuming you have a Home.tsx component
-
+      const response = await axios.post(
+        "http://localhost:8000/api/auth/register", 
+        formData
+      );
+      setMessage(response.data.message); // Success message
+      navigate("/home"); // Redirect to /home after successful registration
     } catch (error: any) {
-      // Show error message if login fails
-      setError(error.response?.data?.message || "Something went wrong");
+      console.error("Error response:", error.response);
+      setError(error.response?.data?.message || error.message || "Something went wrong");
     }
   };
 
@@ -58,19 +56,31 @@ const Login: React.FC = () => {
           src="https://education.sakshi.com/sites/default/files/2022-04/Amrita-vishwa-vidyapeetham-color-logo.png"
           alt="Amrita Logo"
         />
-        <h2>Login</h2>
-
+        <h2>Register</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
-
+        {message && <p style={{ color: "green" }}>{message}</p>} {/* Display success message */}
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label htmlFor="usernameOrEmail">Username or Email:</label>
+            <label htmlFor="username">Username:</label>
             <input
               type="text"
-              id="usernameOrEmail"
-              name="usernameOrEmail"
-              placeholder="Enter your username or email"
-              value={formData.usernameOrEmail}
+              id="username"
+              name="username"
+              placeholder="Enter your username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              value={formData.email}
               onChange={handleChange}
               required
             />
@@ -90,16 +100,12 @@ const Login: React.FC = () => {
           </div>
 
           <button type="submit" className={styles.loginButton}>
-            Login
+            Register
           </button>
         </form>
-
-        <a href="/register" className={styles.registerLink}>
-          Don't have an account? Register
-        </a>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Register;

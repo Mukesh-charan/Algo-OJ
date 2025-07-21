@@ -11,17 +11,17 @@ body {
 }
 
 /* Header styling to stretch across the full width */
-.header {
+header {
   background-color: #a4123f;
   color: white;
   padding: 10px 20px;
   display: flex;
-  justify-content: center;  /* This centers the content horizontally */
-  align-items: center;      /* This ensures vertical alignment is correct */
-  position: relative;
+  align-items: center;
+  position: fixed;
   top: 0;
-  width: 100%;              /* Ensures the header spans the full width */
+  width: 100%;
   z-index: 999;
+  /* Ensure header stays above other content */
 }
 
 /* The logo styling */
@@ -90,7 +90,7 @@ body {
 
 /* Button styling */
 .loginButton {
-  width: 65%;
+  width: 110%;
   padding: 12px;
   border: none;
   background-color: #007bff;
