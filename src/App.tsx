@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './Login/Login.tsx';
 import Register from './Login/Register.tsx';
 import Dashboard from './Dashboard/adminDashboard.tsx';
-import AddProblem from './Dashboard/addProblem.tsx';
+import AddProblem from './Dashboard/addproblem.tsx';
 import EditProblem from './Dashboard/editProblem.tsx';
 export default function App() {
   return (
