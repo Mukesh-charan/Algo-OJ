@@ -43,12 +43,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleEdit = (problem: Problem) => {
-    setEditId(problem._id);
-    setEditName(problem.name);
-    setEditDifficulty(problem.difficulty);
-  };
-
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editId) {
