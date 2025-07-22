@@ -4,6 +4,7 @@ import authRoutes from "./Routes/authroutes.js";
 import connectDB from "./Database/db.js";
 import cors from "cors";
 import bodyParser from "body-parser";
+import problemRoutes from "./Routes/problemroutes.js";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/problems", problemRoutes);
 app.use(bodyParser.json());
 
 

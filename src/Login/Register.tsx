@@ -24,7 +24,7 @@ const Register: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
     setError(""); // Reset error message
     setMessage(""); // Reset success message
 
@@ -34,7 +34,7 @@ const Register: React.FC = () => {
         formData
       );
       setMessage(response.data.message); // Success message
-      navigate("/home"); // Redirect to /home after successful registration
+      navigate("/admindashboard"); // Redirect to /home after successful registration
     } catch (error: any) {
       console.error("Error response:", error.response);
       setError(error.response?.data?.message || error.message || "Something went wrong");
@@ -44,18 +44,11 @@ const Register: React.FC = () => {
   return (
     <div>
       <header className={styles.header}>
-        <img
-          src="https://dt19wmazj2dns.cloudfront.net/wp-content/uploads/2024/04/amrita-vishwa-vidyapeetham-university-logo-white-version.svg"
-          alt="Amrita Vishwa Vidyapeetham"
-        />
-        <h1>Hack-A-Ruckus</h1>
+        <h1>Random(Compile)</h1>
       </header>
 
       <div className={styles.loginContainer}>
-        <img
-          src="https://education.sakshi.com/sites/default/files/2022-04/Amrita-vishwa-vidyapeetham-color-logo.png"
-          alt="Amrita Logo"
-        />
+        
         <h2>Register</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {message && <p style={{ color: "green" }}>{message}</p>} {/* Display success message */}
@@ -103,6 +96,9 @@ const Register: React.FC = () => {
             Register
           </button>
         </form>
+        <a href="/" className={styles.registerLink} style={{ marginLeft: 12 }}>
+          Already have an account? Login
+        </a>
       </div>
     </div>
   );

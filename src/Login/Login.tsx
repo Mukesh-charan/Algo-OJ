@@ -35,7 +35,7 @@ const Login: React.FC = () => {
       localStorage.setItem("token", response.data.token);
 
       // Redirect to the home page after successful login
-      navigate("/home"); // Assuming you have a Home.tsx component
+      navigate("/admindashboard"); // Assuming you have a Home.tsx component
 
     } catch (error: any) {
       // Show error message if login fails
@@ -46,18 +46,10 @@ const Login: React.FC = () => {
   return (
     <div>
       <header className={styles.header}>
-        <img
-          src="https://dt19wmazj2dns.cloudfront.net/wp-content/uploads/2024/04/amrita-vishwa-vidyapeetham-university-logo-white-version.svg"
-          alt="Amrita Vishwa Vidyapeetham"
-        />
-        <h1>Hack-A-Ruckus</h1>
+        <h1>Random(Compile)</h1>
       </header>
 
       <div className={styles.loginContainer}>
-        <img
-          src="https://education.sakshi.com/sites/default/files/2022-04/Amrita-vishwa-vidyapeetham-color-logo.png"
-          alt="Amrita Logo"
-        />
         <h2>Login</h2>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
@@ -94,7 +86,7 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        <a href="/register" className={styles.registerLink}>
+        <a href="/register" className={styles.registerLink} style={{ marginLeft: 12 }}>
           Don't have an account? Register
         </a>
       </div>

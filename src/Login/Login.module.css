@@ -4,7 +4,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
-  background-image: url('https://i.ytimg.com/vi/Lu-7RmiQJ38/maxresdefault.jpg');
+  background-image: url('https://t3.ftcdn.net/jpg/08/68/51/04/360_F_868510427_vsvN67LV1zSmLMyXMOFG05tRCmTAj1xL.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -12,7 +12,7 @@ body {
 
 /* Header styling to stretch across the full width */
 header {
-  background-color: #a4123f;
+  background-color: #1245a4;
   color: white;
   padding: 10px 20px;
   display: flex;
@@ -40,26 +40,21 @@ header {
 /* Login container styling */
 .loginContainer {
   background-color: rgba(255, 255, 255, 0.8);
-  padding: 40px;
+  padding: 50px;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  margin-top: 40px;
   width: 250px; /* Adjusted for proper centering */
   display: flex;
+  position: absolute;
   flex-direction: column; /* Stack children vertically */
   align-items: center; /* Center children horizontally */
 }
 
-/* Logo inside the container */
-.loginContainer img {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 90px;
-}
 
 /* Form group styling */
 .formGroup {
