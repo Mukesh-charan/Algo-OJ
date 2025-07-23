@@ -136,6 +136,30 @@ export const updateUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateUserRole = async (id, newRole) => {
+  try {
+    await axios.put(`${API_URL}/users/${id}`, { type: newRole });
+    setUsers((prev) =>
+      prev.map((user) =>
+        user._id === id ? { ...user, type: newRole } : user
+      )
+    );
+    setEditingUserId(null);
+  } catch (error) {
+    console.error("Failed to update role:", error);
+    alert("Failed to update user role");
+  }
+};
 
 
-export default { loginUser, createUser, getUser, deleteUser, updateUser };
+
+export default { loginUser, createUser, getUser, deleteUser, updateUser, getUsers, updateUserRole };

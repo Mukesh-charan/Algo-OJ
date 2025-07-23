@@ -5,235 +5,198 @@ import "./dashboard.css";
 
 const API_URL = "http://localhost:8000/api/problems";
 
-
 interface TestCase {
-    input: string;
-    output: string;
+  input: string;
+  output: string;
 }
 
 const AddProblem: React.FC = () => {
-    const navigate = useNavigate();
-    const [name, setName] = useState("");
-    const [problemStatement, setProblemStatement] = useState("");
-    const [difficulty, setDifficulty] = useState("");
-    const [sampleIO, setSampleIO] = useState<TestCase[]>([
-        { input: "", output: "" },
-    ]);
-    const [testcases, setTestcases] = useState<TestCase[]>([
-        { input: "", output: "" },
-    ]);
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [problemStatement, setProblemStatement] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [points, setPoints] = useState(0);
+  const [sampleIO, setSampleIO] = useState<TestCase[]>([{ input: "", output: "" }]);
+  const [testcases, setTestcases] = useState<TestCase[]>([{ input: "", output: "" }]);
 
-    const handleAddSample = () => {
-        setSampleIO([...sampleIO, { input: "", output: "" }]);
-    };
+  const handleAddSample = () => {
+    setSampleIO([...sampleIO, { input: "", output: "" }]);
+  };
 
-    const handleRemoveSample = (index: number) => {
-        const updated = sampleIO.filter((_, i) => i !== index);
-        setSampleIO(updated);
-    };
+  const handleRemoveSample = (index: number) => {
+    const updated = sampleIO.filter((_, i) => i !== index);
+    setSampleIO(updated);
+  };
 
-    const handleSampleChange = (index: number, field: "input" | "output", value: string) => {
-        const updated = [...sampleIO];
-        updated[index][field] = value;
-        setSampleIO(updated);
-    };
+  const handleSampleChange = (index: number, field: "input" | "output", value: string) => {
+    const updated = [...sampleIO];
+    updated[index][field] = value;
+    setSampleIO(updated);
+  };
 
-    const handleAddTestcase = () => {
-        setTestcases([...testcases, { input: "", output: "" }]);
-    };
+  const handleAddTestcase = () => {
+    setTestcases([...testcases, { input: "", output: "" }]);
+  };
 
-    const handleRemoveTestcase = (index: number) => {
-        const updated = testcases.filter((_, i) => i !== index);
-        setTestcases(updated);
-    };
+  const handleRemoveTestcase = (index: number) => {
+    const updated = testcases.filter((_, i) => i !== index);
+    setTestcases(updated);
+  };
 
-    const handleTestcaseChange = (index: number, field: "input" | "output", value: string) => {
-        const updated = [...testcases];
-        updated[index][field] = value;
-        setTestcases(updated);
-    };
+  const handleTestcaseChange = (index: number, field: "input" | "output", value: string) => {
+    const updated = [...testcases];
+    updated[index][field] = value;
+    setTestcases(updated);
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!difficulty) {
-            alert("Please select a difficulty level.");
-            return;
-          }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!difficulty) {
+      alert("Please select a difficulty level.");
+      return;
+    }
+    try {
+      const filteredSampleInput = sampleIO.map(io => io.input.trim()).filter(x => x);
+      const filteredSampleOutput = sampleIO.map(io => io.output.trim()).filter(x => x);
 
-        try {
-            const filteredSampleInput = sampleIO.map(io => io.input.trim()).filter(x => x);
-            const filteredSampleOutput = sampleIO.map(io => io.output.trim()).filter(x => x);
+      await axios.post(`${API_URL}/`, {
+        name,
+        difficulty,
+        points,
+        problemStatement,
+        sampleInput: filteredSampleInput,
+        sampleOutput: filteredSampleOutput,
+        testcases,
+      });
+      alert("Problem added successfully");
+      navigate("/adminDashboard");
+    } catch (error) {
+      console.error("Failed to add problem:", error);
+      alert("Error adding problem");
+    }
+  };
 
-            await axios.post(`${API_URL}/`, {
-                name,
-                difficulty,
-                problemStatement,
-                sampleInput: filteredSampleInput,
-                sampleOutput: filteredSampleOutput,
-                testcases,
-            });
+  return (
+    <div>
+      <header className="header">
+        <h1>Random(Compile)</h1>
+      </header>
+    <div className="addcontainer">
+      <form onSubmit={handleSubmit} className="add-form">
+        <label>Problem Name:</label>
+        <input
+          required
+          className="input-full"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
 
+        <label>Difficulty:</label>
+        <select
+          required
+          className="input-full"
+          value={difficulty}
+          onChange={e => setDifficulty(e.target.value)}
+        >
+          <option value="">Select difficulty</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
 
-            alert("Problem added successfully");
-            navigate("/");
-        } catch (error) {
-            console.error("Failed to add problem:", error);
-            alert("Error adding problem");
-        }
-    };
+        <label>Points:</label>
 
-    return (
-        <>
-            <header className="header">
-                <h1>Add Problem</h1>
-            </header>
+        <input
+          required
+          className="input-full"
+          value={points}
+          onChange={e => setPoints(Number(e.target.value))}
+        />
 
-            <div className="addcontainer">
-                <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 15 }}>
-                    <label>
-                        Problem Name:
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                            style={{ width: "100%", padding: 6, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                        />
-                    </label>
-                    <label>
-                        Difficulty:
-                        <select
-                            value={difficulty}
-                            onChange={(e) => setDifficulty(e.target.value)}
-                            required
-                            style={{ width: "100%", padding: 6, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                        >
-                            <option value="" disabled>Select difficulty</option>
-                            <option value="Easy">Easy</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Hard">Hard</option>
-                        </select>
+        <label>Problem Statement:</label>
+        <textarea
+          rows={5}
+          required
+          className="input-full"
+          value={problemStatement}
+          onChange={e => setProblemStatement(e.target.value)}
+        />
 
-                    </label>
-                    <label>
-                        Problem Statement:
-                        <textarea
-                            value={problemStatement}
-                            onChange={(e) => setProblemStatement(e.target.value)}
-                            rows={5}
-                            required
-                            style={{ width: "100%", padding: 6, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                        />
-                    </label>
+        <label>Sample Input/Output</label>
+        {sampleIO.map((io, idx) => (
+          <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
+            <input
+              required
+              className="input-flex"
+              value={io.input}
+              onChange={e => handleSampleChange(idx, "input", e.target.value)}
+              placeholder="Sample Input"
+            />
+            <input
+              required
+              className="input-flex"
+              value={io.output}
+              onChange={e => handleSampleChange(idx, "output", e.target.value)}
+              placeholder="Sample Output"
+            />
+            {sampleIO.length > 1 && (
+              <button type="button" className="btn-remove" onClick={() => handleRemoveSample(idx)} aria-label="Remove sample">
+                &minus;
+              </button>
+            )}
+            {idx === sampleIO.length - 1 && (
+              <button type="button" className="btn-add" onClick={handleAddSample} aria-label="Add sample">
+                +
+              </button>
+            )}
+          </div>
+        ))}
 
-                    {/* Sample Input/Output Section */}
-                    <fieldset style={{ border: "2px solid #1245a4", padding: 10, borderRadius: 6 }}>
-                        <legend>Sample Input/Output</legend>
-                        {sampleIO.map((io, idx) => (
-                            <div
-                                key={idx}
-                                style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}
-                            >
-                                <input
-                                    type="text"
-                                    placeholder="Sample input"
-                                    value={io.input}
-                                    onChange={(e) => handleSampleChange(idx, "input", e.target.value)}
-                                    required
-                                    style={{ flex: 1, padding: 4, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Sample output"
-                                    value={io.output}
-                                    onChange={(e) => handleSampleChange(idx, "output", e.target.value)}
-                                    required
-                                    style={{ flex: 1, padding: 4, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                                />
-                                {sampleIO.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveSample(idx)}
-                                        aria-label="Remove sample"
-                                        style={{ cursor: "pointer", color: "red", border: "2px solid #1245a4", backgroundColor: "white"}}
-                                    >
-                                        &#x2212; {/* minus symbol */}
-                                    </button>
-                                )}
-                                {idx === sampleIO.length - 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={handleAddSample}
-                                        aria-label="Add sample"
-                                        style={{ cursor: "pointer", color: "green", backgroundColor:"white", border: "2px solid #1245a4"}}
-                                    >
-                                        &#x2b; {/* plus symbol */}
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </fieldset>
+        <label>Main Testcases</label>
+        {testcases.map((tc, idx) => (
+          <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
+            <input
+              required
+              className="input-flex"
+              value={tc.input}
+              onChange={e => handleTestcaseChange(idx, "input", e.target.value)}
+              placeholder="Testcase Input"
+            />
+            <input
+              required
+              className="input-flex"
+              value={tc.output}
+              onChange={e => handleTestcaseChange(idx, "output", e.target.value)}
+              placeholder="Testcase Output"
+            />
+            {testcases.length > 1 && (
+              <button type="button" className="btn-remove" onClick={() => handleRemoveTestcase(idx)} aria-label="Remove testcase">
+                &minus;
+              </button>
+            )}
+            {idx === testcases.length - 1 && (
+              <button type="button" className="btn-add" onClick={handleAddTestcase} aria-label="Add testcase">
+                +
+              </button>
+            )}
+          </div>
+        ))}
 
-                    {/* Main Testcases Section */}
-                    <fieldset style={{ border: "2px solid #1245a4", padding: 10, borderRadius: 6 }}>
-                        <legend>Main Testcases</legend>
-                        {testcases.map((tc, idx) => (
-                            <div
-                                key={idx}
-                                style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}
-                            >
-                                <input
-                                    type="text"
-                                    placeholder="Testcase input"
-                                    value={tc.input}
-                                    onChange={(e) => handleTestcaseChange(idx, "input", e.target.value)}
-                                    required
-                                    style={{ flex: 1, padding: 4, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black"}}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Testcase output"
-                                    value={tc.output}
-                                    onChange={(e) => handleTestcaseChange(idx, "output", e.target.value)}
-                                    required
-                                    style={{ flex: 1, padding: 4, borderRadius: 4, border: "2px solid #1245a4", backgroundColor: "white", color:"black" }}
-                                />
-                                {testcases.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveTestcase(idx)}
-                                        aria-label="Remove testcase"
-                                        style={{ cursor: "pointer", color: "red", backgroundColor:"white", border: "2px solid #1245a4"}}
-                                    >
-                                        &#x2212;
-                                    </button>
-                                )}
-                                {idx === testcases.length - 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={handleAddTestcase}
-                                        aria-label="Add testcase"
-                                        style={{ cursor: "pointer", color: "green", backgroundColor:"white", border: "2px solid #1245a4"}}
-                                    >
-                                        &#x2b;
-                                    </button>
-                                )}
-                            </div>
-                        ))}
-                    </fieldset>
-
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
-                        <button type="submit" style={{ padding: "8px 16px" }}>
-                            Submit
-                        </button>
-                        <button type="button" onClick={() => navigate("/adminDashboard")} style={{ padding: "8px 16px" }}>
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </>
-    );
+        <button type="submit" className="button-action">
+          Submit
+        </button>
+        <button
+          type="button"
+          className="button-action"
+          style={{ backgroundColor: "#eee", color: "#1245a4" }}
+          onClick={() => navigate("/problemDashboard")}
+        >
+          Cancel
+        </button>
+      </form>
+    </div>
+    </div>
+  );
 };
 
 export default AddProblem;

@@ -1,22 +1,19 @@
 import express from 'express';
-import{ loginUser, createUser, getUser, deleteUser, updateUser } from '../Controllers/authControllers.mjs';
+import{ loginUser, createUser, getUser, deleteUser, updateUser, getUsers, updateUserRole } from '../Controllers/authControllers.mjs';
 
 
 const router = express.Router();
 
-// Register Route
 router.post('/register', createUser);
 
-// Get User by ID
-router.get('/:id', getUser);
-
-// Delete User by ID
-router.delete('/:id', deleteUser);
-
-// Update User by ID
 router.put('/:id', updateUser);
 
 router.post('/login', loginUser);
+
+router.get('/users', getUsers);
+router.get('/users/:id', getUser);
+router.delete('/users/:id', deleteUser);
+router.put('/users/:id', updateUserRole);
 
 export default router;
 

@@ -11,11 +11,22 @@ export const getProblems = async (req, res) => {
   }
 };
 
+export const getProblemById = async (req, res) => {
+  try {
+    const problem = await Problem.findById(req.params.id);
+    if (!problem) {
+      return res.status(404).json({ message: "Problem not found" });
+    }
+    res.json(problem);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 // Create a new problem
 export const createProblem = async (req, res) => {
-  const { name, difficulty, problemStatement, sampleInput, sampleOutput, testcases } = req.body;
+  const { name, difficulty,points, problemStatement, sampleInput, sampleOutput, testcases } = req.body;
   try {
-    const newProblem = new Problem({ name, difficulty, problemStatement, sampleInput, sampleOutput, testcases });
+    const newProblem = new Problem({ name, difficulty,points, problemStatement, sampleInput, sampleOutput, testcases });
     await newProblem.save();
     res.status(201).json(newProblem);
   } catch (err) {

@@ -8,6 +8,7 @@ const TestCaseSchema = new mongoose.Schema({
 const ProblemSchema = new mongoose.Schema({
   name: { type: String, required: true },
   difficulty: { type: String, required: true },
+  points : { type: Number, required: true },
   problemStatement: { type: String, required: true },
   sampleInput: [{ type: String, required: true }],  
   sampleOutput: [{ type: String, required: true }],  

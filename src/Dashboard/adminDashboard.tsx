@@ -1,158 +1,104 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 import "./dashboard.css";
+import Particles from "react-tsparticles";
+import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
+import { loadSlim } from "tsparticles-slim";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:8000/api"; // Replace with your actual API base URL
-
-interface Problem {
-  _id: string;
-  name: string;
-  difficulty: string;
-}
-
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-
-  const [problems, setProblems] = useState<Problem[]>([]);
-  const [search, setSearch] = useState("");
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editDifficulty, setEditDifficulty] = useState("");
-
-  useEffect(() => {
-    fetchProblems();
-  }, []);
-
-  const fetchProblems = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/problems`);
-      setProblems(res.data);
-    } catch (error) {
-      console.error("Failed to fetch problems:", error);
-      setProblems([]);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await axios.delete(`${API_URL}/problems/${id}`);
-      fetchProblems();
-    } catch (error) {
-      console.error("Failed to delete problem:", error);
-    }
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editId) {
-      try {
-        await axios.put(`${API_URL}/problems/${editId}`, {
-          name: editName,
-          difficulty: editDifficulty,
-        });
-        setEditId(null);
-        setEditName("");
-        setEditDifficulty("");
-        fetchProblems();
-      } catch (error) {
-        console.error("Failed to update problem:", error);
-      }
-    }
-  };
-
-  const filteredProblems = problems.filter((problem) =>
-    problem.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <>
+const AdminDashboard = () => {
+    const particlesInit = async (engine: Engine) => {
+        try {
+          await loadSlim(engine);
+        } catch (error) {
+          console.error("Error initializing particles:", error);
+        }
+      };
+    
+      const particlesOptions: RecursivePartial<IOptions> = {
+        particles: {
+          number: {
+            value: 80,
+            density: {
+              enable: true,
+              value_area: 800,
+            },
+          },
+          color: {
+            value: "#ffffff",
+          },
+          shape: {
+            type: "circle",
+          },
+          opacity: {
+            value: 0.5,
+            random: false,
+          },
+          size: {
+            value: 3,
+            random: true,
+          },
+          links: {
+            enable: true,
+            distance: 150,
+            color: "#ffffff",
+            opacity: 0.4,
+            width: 1,
+          },
+          move: {
+            enable: true,
+            speed: 2,
+            direction: "none",
+            random: false,
+            straight: false,
+            out_mode: "out",
+            bounce: false,
+          },
+        },
+        interactivity: {
+          events: {
+            onhover: {
+              enable: true,
+              mode: "repulse",
+            },
+            onclick: {
+              enable: true,
+              mode: "push",
+            },
+          },
+          modes: {
+            repulse: {
+              distance: 100,
+              duration: 0.4,
+            },
+            push: {
+              particles_nb: 4,
+            },
+          },
+        },
+        retina_detect: true,
+      };
+    const navigate = useNavigate();
+    return (
+        <div>
+        <Particles
+            id="welcome-particles"
+            init={particlesInit}
+            options={particlesOptions}
+            className="particles-container"
+          />
+          
+        <div>
       <header className="header">
         <h1>Random(Compile)</h1>
       </header>
-
       <div className="container">
-        <input
-          type="text"
-          className="search-bar"
-          placeholder="Search by problem name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        {filteredProblems.length === 0 ? (
-          <div style={{ textAlign: "center", marginTop: 40, fontSize: 20 }}>
-            <p>No problems found.</p>
-          </div>
-        ) : (
-          <div className="problem-list">
-            {/* Headings */}
-            <div
-              className="problem-item"
-              style={{ fontWeight: "bold", fontSize: 22, marginBottom: 15 }}
-            >
-              <div style={{ flex: 4 }}>Problem</div>
-              <div style={{ flex: 2 }}>Difficulty</div>
-              <div style={{ flex: 2, textAlign: "center" }}>Actions</div>
-            </div>
-
-            {/* List */}
-            {filteredProblems.map((problem) =>
-              editId === problem._id ? (
-                <form
-                  key={problem._id}
-                  className="problem-item"
-                  onSubmit={handleUpdate}
-                  style={{ fontSize: 20 }}
-                >
-                  <input
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    required
-                    style={{ flex: 4, marginRight: 10, padding: 6, borderRadius: 6 }}
-                  />
-                  <input
-                    value={editDifficulty}
-                    onChange={(e) => setEditDifficulty(e.target.value)}
-                    required
-                    style={{ flex: 2, marginRight: 10, padding: 6, borderRadius: 6 }}
-                  />
-                  <div
-                    className="problem-actions"
-                    style={{ flex: 2, display: "flex", justifyContent: "center" }}
-                  >
-                    <button type="submit">Save</button>
-                    <button type="button" >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div key={problem._id} className="problem-item" style={{ fontSize: 20 }}>
-                  <div style={{ flex: 4 }}>{problem.name}</div>
-                  <div style={{ flex: 2 }}>{problem.difficulty}</div>
-                  <div
-                    className="problem-actions"
-                    style={{ flex: 2, display: "flex", justifyContent: "center" }}
-                  >
-                    <button onClick={() => navigate("/editProblem")}>Edit</button>
-                    <button onClick={() => handleDelete(problem._id)}>Delete</button>
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-        )}
-
-        <button
-          onClick={() => navigate("/addProblem")}
-          style={{ marginTop: 40, fontSize: 18, padding: "10px 20px", borderRadius: 6 }}
-        >
-          Add Problem
-        </button>
+        <h1>Admin Dashboard</h1>
+        <div style={{ display: "flex", gap: "100px", width: "100%"}}>
+        <button style={{ flex: 1}} onClick={() => navigate("/problemDashboard")}><h2>Problem Dashboard</h2></button>
+        <button style={{ flex: 1}} onClick={() => navigate("/userDashboard")}><h2>User Dashboard</h2></button>
+        </div>
       </div>
-    </>
-  );
-};
-
-export default Dashboard;
+      </div>
+      </div>
+    )
+}
+export default AdminDashboard;
