@@ -3,6 +3,8 @@ import Particles from "react-tsparticles";
 import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
 import { loadSlim } from "tsparticles-slim";
 import { useNavigate } from "react-router-dom";
+import { handleLogout } from "../auth";
+
 
 const AdminDashboard = () => {
     const particlesInit = async (engine: Engine) => {
@@ -89,12 +91,14 @@ const AdminDashboard = () => {
         <div>
       <header className="header">
         <h1>Random(Compile)</h1>
+        <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
       </header>
       <div className="container">
         <h1>Admin Dashboard</h1>
         <div style={{ display: "flex", gap: "100px", width: "100%"}}>
-        <button style={{ flex: 1}} onClick={() => navigate("/problemDashboard")}><h2>Problem Dashboard</h2></button>
-        <button style={{ flex: 1}} onClick={() => navigate("/userDashboard")}><h2>User Dashboard</h2></button>
+        <button style={{ flex: 1}} onClick={() => navigate("/problemDashboard")}><h2 style={{color: "white"}}>Problem Management</h2></button>
+        <button style={{ flex: 1}} onClick={() => navigate("/userDashboard")}><h2 style={{color: "white"}}>User Management</h2></button>
+        <button style={{ flex: 1}} onClick={() => navigate("/dashboard")}><h2 style={{color: "white"}}>User Dashboard</h2></button>
         </div>
       </div>
       </div>

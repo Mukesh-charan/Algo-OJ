@@ -73,8 +73,9 @@ export const loginUser = async (req, res) => {
 
     // Respond with success message and the token
     res.json({
+      user: user,
       message: 'Login successful',
-      token, // Send the JWT token
+      token,
     });
   } catch (err) {
     console.error('Error during login:', err.message);
@@ -145,20 +146,26 @@ export const getUsers = async (req, res) => {
   }
 };
 
-export const updateUserRole = async (id, newRole) => {
+export const updateUserRole = async (req, res) => {
+  const { id } = req.params;               // user ID from the route
+  const { type } = req.body;               // 'type' is the new role sent from client
+
   try {
-    await axios.put(`${API_URL}/users/${id}`, { type: newRole });
-    setUsers((prev) =>
-      prev.map((user) =>
-        user._id === id ? { ...user, type: newRole } : user
-      )
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { type },                            // update 'type' field (role)
+      { new: true }                        // return the updated user
     );
-    setEditingUserId(null);
-  } catch (error) {
-    console.error("Failed to update role:", error);
-    alert("Failed to update user role");
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(updatedUser);                 // send updated user to frontend
+  } catch (err) {
+    console.error("Failed to update user role:", err);
+    res.status(500).json({ message: "Failed to update user role" });
   }
 };
+
 
 
 

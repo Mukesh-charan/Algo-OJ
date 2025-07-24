@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import styles from "./Login.module.css";
+import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
+import { loadSlim } from "tsparticles-slim";
+import Particles from "react-tsparticles";
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,15 +37,91 @@ const Register: React.FC = () => {
         formData
       );
       setMessage(response.data.message); // Success message
-      navigate("/admindashboard"); // Redirect to /home after successful registration
+      navigate("/dashboard"); // Redirect to /home after successful registration
     } catch (error: any) {
       console.error("Error response:", error.response);
       setError(error.response?.data?.message || error.message || "Something went wrong");
     }
   };
+  const particlesInit = async (engine: Engine) => {
+    try {
+      await loadSlim(engine);
+    } catch (error) {
+      console.error("Error initializing particles:", error);
+    }
+  };
 
+  const particlesOptions: RecursivePartial<IOptions> = {
+    particles: {
+      number: {
+        value: 80,
+        density: {
+          enable: true,
+          value_area: 800,
+        },
+      },
+      color: {
+        value: "#ffffff",
+      },
+      shape: {
+        type: "circle",
+      },
+      opacity: {
+        value: 0.5,
+        random: false,
+      },
+      size: {
+        value: 3,
+        random: true,
+      },
+      links: {
+        enable: true,
+        distance: 150,
+        color: "#ffffff",
+        opacity: 0.4,
+        width: 1,
+      },
+      move: {
+        enable: true,
+        speed: 2,
+        direction: "none",
+        random: false,
+        straight: false,
+        out_mode: "out",
+        bounce: false,
+      },
+    },
+    interactivity: {
+      events: {
+        onhover: {
+          enable: true,
+          mode: "repulse",
+        },
+        onclick: {
+          enable: true,
+          mode: "push",
+        },
+      },
+      modes: {
+        repulse: {
+          distance: 100,
+          duration: 0.4,
+        },
+        push: {
+          particles_nb: 4,
+        },
+      },
+    },
+    retina_detect: true,
+  };
   return (
     <div>
+      <Particles
+            id="welcome-particles"
+            init={particlesInit}
+            options={particlesOptions}
+            className="particles-container"
+          />
       <header className={styles.header}>
         <h1>Random(Compile)</h1>
       </header>

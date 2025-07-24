@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate hook
 import axios from "axios";
 import styles from "./Login.module.css";
+import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
+import { loadSlim } from "tsparticles-slim";
+import Particles from "react-tsparticles";
+
+
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -30,21 +35,105 @@ const Login: React.FC = () => {
         email: formData.usernameOrEmail, // Send username or email
         password: formData.password,
       });
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userType", response.data.user.type);
+      localStorage.setItem("_id", response.data.user._id);
 
       // Store the token (in localStorage or other methods)
-      localStorage.setItem("token", response.data.token);
+      //localStorage.setItem("token", response.data.token);
 
-      // Redirect to the home page after successful login
-      navigate("/admindashboard"); // Assuming you have a Home.tsx component
+      const user = response.data.user;
+      if (user.type === "admin") {
+        navigate("/adminDashboard");
+      } else {
+        navigate("/dashboard");
+      }
+      
 
     } catch (error: any) {
       // Show error message if login fails
       setError(error.response?.data?.message || "Something went wrong");
     }
   };
+  const particlesInit = async (engine: Engine) => {
+    try {
+      await loadSlim(engine);
+    } catch (error) {
+      console.error("Error initializing particles:", error);
+    }
+  };
 
+  const particlesOptions: RecursivePartial<IOptions> = {
+    particles: {
+      number: {
+        value: 80,
+        density: {
+          enable: true,
+          value_area: 800,
+        },
+      },
+      color: {
+        value: "#ffffff",
+      },
+      shape: {
+        type: "circle",
+      },
+      opacity: {
+        value: 0.5,
+        random: false,
+      },
+      size: {
+        value: 3,
+        random: true,
+      },
+      links: {
+        enable: true,
+        distance: 150,
+        color: "#ffffff",
+        opacity: 0.4,
+        width: 1,
+      },
+      move: {
+        enable: true,
+        speed: 2,
+        direction: "none",
+        random: false,
+        straight: false,
+        out_mode: "out",
+        bounce: false,
+      },
+    },
+    interactivity: {
+      events: {
+        onhover: {
+          enable: true,
+          mode: "repulse",
+        },
+        onclick: {
+          enable: true,
+          mode: "push",
+        },
+      },
+      modes: {
+        repulse: {
+          distance: 100,
+          duration: 0.4,
+        },
+        push: {
+          particles_nb: 4,
+        },
+      },
+    },
+    retina_detect: true,
+  };
   return (
     <div>
+      <Particles
+            id="welcome-particles"
+            init={particlesInit}
+            options={particlesOptions}
+            className="particles-container"
+          />
       <header className={styles.header}>
         <h1>Random(Compile)</h1>
       </header>

@@ -16,7 +16,7 @@ interface Problem {
   points: number;
 }
 
-const ProblemDashboard: React.FC = () => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [search, setSearch] = useState("");
@@ -36,12 +36,12 @@ const ProblemDashboard: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleSolve = async (id: string) => {
     try {
-      await axios.delete(`${API_URL}/problems/${id}`);
-      fetchProblems();
+      await axios.get(`${API_URL}/problems/${id}`);
+      navigate(`/codeEditor/${id}`);
     } catch (error) {
-      console.error("Failed to delete problem:", error);
+      console.error("Failed to solve problem:", error);
     }
   };
 
@@ -133,8 +133,6 @@ const ProblemDashboard: React.FC = () => {
         <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
       </header>
       <div className="container">
-      <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Admin Dashboard</button>
-      
       <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px"}}>
         <input
           value={search}
@@ -164,7 +162,7 @@ const ProblemDashboard: React.FC = () => {
               <div style={{ flex: 4 }}>Problem</div>
               <div style={{ flex: 2 }}>Difficulty</div>
               <div style={{ flex: 2 }}>Points</div>
-              <div style={{ flex: 2 }}>Actions</div>
+              <div style={{ flex: 1 }}>Actions</div>
             </div>
             <div className="problem-list">
               {filteredProblems.map((problem) =>
@@ -173,31 +171,24 @@ const ProblemDashboard: React.FC = () => {
                   <div style={{ flex: 4 }}>{problem.name}</div>
                   <div style={{ flex: 2 }}>{problem.difficulty}</div>
                   <div style={{ flex: 2 }}>{problem.points}</div>
-                  <div className="problem-actions" style={{ flex: 2 }}>
+                  <div className="problem-actions" style={{ flex: 1 }}>
+                  
                     <button className="button-action"
-                      onClick={() => navigate(`/editProblem/${problem._id}`)}
+                      onClick={() => handleSolve(problem._id)}
                     >
-                      Edit
+                      Solve
                     </button>
-                    <button className="button-action"
-                      onClick={() => handleDelete(problem._id)}
-                    >
-                      Delete
-                    </button>
-
                   </div>
-                </div>
+                  </div>
+                  
               )
               )}
             </div>
           </>
         )}
-        <button className="add-problem-btn" onClick={() => navigate("/addProblem")}>
-          Add Problem
-        </button>
       </div>
     </div>
   );
 };
 
-export default ProblemDashboard;
+export default Dashboard;

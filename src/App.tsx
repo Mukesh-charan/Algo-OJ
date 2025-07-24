@@ -1,23 +1,76 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+
 import Login from './Login/Login.tsx';
 import Register from './Login/Register.tsx';
 import ProblemDashboard from './Dashboard/admin_problemDashboard.tsx';
-import AdminDashboard from './Dashboard/adminDashboard.tsx';
+import AdminDashboard from './Dashboard/admindashboard.tsx';
 import AddProblem from './Dashboard/addproblem.tsx';
 import EditProblem from './Dashboard/editProblem.tsx';
 import UserDashboard from './Dashboard/admin_userdashboard.tsx';
+import Dashboard from './Dashboard/userdashboard.tsx';
+
+import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
 export default function App() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/admindashboard" element={<AdminDashboard />} />
-      <Route path="/problemDashboard" element={<ProblemDashboard />} />
-      <Route path="/addProblem" element={<AddProblem />} />
-      <Route path="/editProblem/:id" element={<EditProblem />} />
-      <Route path="/userDashboard" element={<UserDashboard />} />
+
+      {/* Admin-only routes */}
+      <Route
+        path="/admindashboard"
+        element={
+          <RoleProtectedRoute role="admin">
+            <AdminDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/problemDashboard"
+        element={
+          <RoleProtectedRoute role="admin">
+            <ProblemDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/addProblem"
+        element={
+          <RoleProtectedRoute role="admin">
+            <AddProblem />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/editProblem/:id"
+        element={
+          <RoleProtectedRoute role="admin">
+            <EditProblem />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/userDashboard"
+        element={
+          <RoleProtectedRoute role="admin">
+            <UserDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      {/* Protected routes - any logged-in user */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fallback for unknown routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-
