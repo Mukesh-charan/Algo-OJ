@@ -145,12 +145,12 @@ const UserDashboard = () => {
             className="particles-container"
           />
       <header className="header">
-        <h1>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
+        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
       </header>
       <div className="container">
         <button className="back-btn" onClick={() => navigate("/admindashboard")}>
-          Back to Admin Dashboard
+          Back to Dashboard
         </button>
 
         {/* Search & Role filter */}

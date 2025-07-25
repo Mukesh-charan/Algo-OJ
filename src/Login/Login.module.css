@@ -4,15 +4,12 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
-  background-image: url('https://t3.ftcdn.net/jpg/08/68/51/04/360_F_868510427_vsvN67LV1zSmLMyXMOFG05tRCmTAj1xL.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: black   ;
 }
 
 /* Header styling to stretch across the full width */
 header {
-  background-color: #1245a4;
+  background-color: black  ;
   color: white;
   padding: 10px 20px;
   display: flex;

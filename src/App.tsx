@@ -8,14 +8,14 @@ import AddProblem from './Dashboard/addproblem.tsx';
 import EditProblem from './Dashboard/editProblem.tsx';
 import UserDashboard from './Dashboard/admin_userdashboard.tsx';
 import Dashboard from './Dashboard/userdashboard.tsx';
-
+import CodeEditor from './Code_Editor/codeEditor.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
 export default function App() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<Login />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       {/* Admin-only routes */}
@@ -61,15 +61,19 @@ export default function App() {
       />
       {/* Protected routes - any logged-in user */}
       <Route
-        path="/dashboard"
+        path="/"
         element={
-          <ProtectedRoute>
             <Dashboard />
+        }
+      />
+      <Route
+        path="/codeEditor/:id"
+        element={ 
+          <ProtectedRoute>
+            <CodeEditor />
           </ProtectedRoute>
         }
       />
-
-      {/* Fallback for unknown routes */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

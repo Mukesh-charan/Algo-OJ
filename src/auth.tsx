@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactEl
 
   if (!token) {
     // Redirect to login if no token
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   // Return children wrapped in a fragment to ensure valid JSX.Element
@@ -28,7 +28,7 @@ export function RoleProtectedRoute({ children, role }: RoleProtectedRouteProps):
 
   if (!token || userType !== role) {
     // Redirect to login if not authorized
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;

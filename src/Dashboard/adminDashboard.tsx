@@ -90,15 +90,15 @@ const AdminDashboard = () => {
           
         <div>
       <header className="header">
-        <h1>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
+        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
       </header>
       <div className="container">
         <h1>Admin Dashboard</h1>
         <div style={{ display: "flex", gap: "100px", width: "100%"}}>
         <button style={{ flex: 1}} onClick={() => navigate("/problemDashboard")}><h2 style={{color: "white"}}>Problem Management</h2></button>
         <button style={{ flex: 1}} onClick={() => navigate("/userDashboard")}><h2 style={{color: "white"}}>User Management</h2></button>
-        <button style={{ flex: 1}} onClick={() => navigate("/dashboard")}><h2 style={{color: "white"}}>User Dashboard</h2></button>
+        <button style={{ flex: 1}} onClick={() => navigate("/")}><h2 style={{color: "white"}}>User Dashboard</h2></button>
         </div>
       </div>
       </div>

@@ -175,7 +175,7 @@ const Register: React.FC = () => {
             Register
           </button>
         </form>
-        <a href="/" className={styles.registerLink} style={{ marginLeft: 12 }}>
+        <a href="/login" className={styles.registerLink} style={{ marginLeft: 12 }}>
           Already have an account? Login
         </a>
       </div>

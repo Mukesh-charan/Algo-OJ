@@ -129,10 +129,22 @@ const Dashboard: React.FC = () => {
             className="particles-container"
           />
       <header className="header">
-        <h1>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
+        {!localStorage.getItem("token") ? (
+          <button onClick={() => {navigate("/login")}} style={{marginRight: "30px"}}>Login</button>
+        ):(
+          <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+        )
+      }
+        
       </header>
       <div className="container">
+        {localStorage.getItem("userType") === "admin" ? (
+          <button className="back-btn" onClick={() => navigate("/admindashboard")}>
+            Back to Dashboard
+          </button>
+        ) : null}
+
       <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px"}}>
         <input
           value={search}

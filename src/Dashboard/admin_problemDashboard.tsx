@@ -129,11 +129,11 @@ const ProblemDashboard: React.FC = () => {
             className="particles-container"
           />
       <header className="header">
-        <h1>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
+        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
       </header>
       <div className="container">
-      <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Admin Dashboard</button>
+      <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Dashboard</button>
       
       <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px"}}>
         <input

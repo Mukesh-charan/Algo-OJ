@@ -1,230 +1,177 @@
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+/* Container for the two main columns */
+.container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  color: #222;
+  box-sizing: border-box;
 }
 
-  /* Add this CSS for the Submissions button */
-.submissions-button {
-    position: absolute;
-    top: 68%;
-    left: 38%;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+/* Left: Question Section */
+.question-section {
+  height: 100%;
+  flex: 1 1 50%;
+  max-width: 50%;
+  padding: 10px;
+  background-color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
-  .submissions-button:hover {
-    background-color: #0056b3;
-  }
+/* Right: Answer/Editor Section */
+.answer-section {
+  flex: 1 1 50%;
+  max-width: 50%;
+  padding: 10px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-  /* Basic styling for the body to ensure full height and no scrollbars */
-  /* Container for the two columns, taking up full height */
-  
-  .container {  
-    display: flex;
-    width: 100%;
-    height: 100%;
-  }
+/* Left panel internal split */
 
-  /* Left column (Output Section) */
-  .question-section {
-    flex: 1; /* Takes 50% of the space */
-    padding: 10px;
-    background-color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    max-width: 97%;
-    overflow-x: auto;  /* Allows absolute positioning of the buttons */
-  }
+/* Container for top 75% with problem info and scrollable statement */
+.questionContent {
+  flex: 0 0 70%;       /* Occupy 75% height */
+  min-height: 0;       /* Important for flexbox scroll to work */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-  /* Right column (Answer - CodeMirror editor) */
-  .answer-section {
-    flex: 1; /* Takes 50% of the space */
-    padding: 10px;
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-  }
+/* Scrollable problem statement area */
+.problemStatementScrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 100%;
+  font-size: 1.1rem;
+  white-space: pre-line;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  padding-right: 8px; /* For scrollbar space */
+}
 
-  /* Styling for the Output area */
-  .output-container {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f4f4f4;
-    font-size: large;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 97%;
-    flex-grow: 1; /* Ensures it grows with available space */
-    max-height: calc(100% - 150px); /* Prevent it from growing beyond a certain point */
-    overflow-y: auto;
-    max-width: 97%;
-    overflow-x: auto; /* Enable vertical scrolling when the content overflows */
-  }
-  
+/* Bottom 25% with testcase tabs and panel */
+.testcasePanel {
+  flex: 0 0 30%;      /* Occupy 25% height */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-top: 6px;
+}
 
-  /* Dropdown styling */
-  .language-dropdown, .problem-dropdown {
-    position: absolute;
-    margin-top: 20px;
-    top: 10px;
-    right:1%;
-    padding: 5px;
-    background-color: #333;
-    color: white;
-    border: none;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+/* Tabs container style */
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
 
-  /* Button Container for Run and Submit */
-  .button-container {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }
+/* Tab buttons */
+.tabButton {
+  color: black;
+  background: #f7f7f7;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  outline: none;
+  font-size: 1rem;
+  user-select: none;
+}
 
-  .button-container button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
+/* Active tab styling */
+.activeTab {
+  background: #e3f0fa;
+  border-bottom: 2px solid #1976d2;
+  font-weight: bold;
+}
 
-  .button-container button:hover {
-    background-color: #45a049;
-  }
+/* Tab panel under tabs */
+.tab-panel {
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 0 0 7px 7px;
+  padding: 8px 6px;
+  background: #fff;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
 
-  /* Styling for the Submit button */
-  .submit-button {
-    background-color: #f44336;
-  }
+/* Test case input and output style */
+.testcase-input,
+.testcase-output {
+  color: black;
+  width: 100%;
+  max-height: 25px;
+  resize: vertical;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 3px;
+  padding: 5px;
+  box-sizing: border-box;
+  font-family: monospace, monospace;
+}
 
-  .submit-button:hover {
-    background-color: #e53935;
-  }
+/* Language Dropdown style */
+.language-dropdown {
+  margin-bottom: 12px;
+  max-width: 200px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+}
 
-  /* Styling for the editor container */
-  .editor-container {
-    height: 100%; /* Make it take the full height of the answer section */
-  }
+/* Editor container */
+.editor-container {
+  height: 100%;
+  margin-top: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
 
-  /* Styling for the CodeMirror editor */
-  .CodeMirror {
-    height: 100% !important;
-    border: 1px solid #ccc;
-    font-size: 18px; /* Adjust font size for 30 lines */
-  }
+/* Code editor textarea */
+.code-textarea {
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-family: monospace, monospace;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  box-sizing: border-box;
+  resize: none;
+  background-color: white;
+  color: black;
+}
 
-  /* Optional: Customize the line numbers */
-  .CodeMirror-gutter {
-    background-color: #f4f4f4;
-  }
-
-  /* Input container styling */
-  .input-container {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f4f4f4;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 95%;
-  }
-
-  .input-container textarea {
-    width: 100%;
-    height: 100px;
-    background: #1a1a26;
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 5px;
-    resize: none;
-  }
-
-  .input-container textarea:focus {
-    outline: 2px solid #007bff;
-  }
-
-  /* Modal Styles */
-  .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0, 0, 0, 0.5); /* Black w/ opacity */
-  }
-
-  .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; /* 10% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 10px;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 800px;
-  }
-
-  .close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  .close-button:hover,
-  .close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-  /* Table Styling */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-  }
-
-  table, th, td {
-    border: 1px solid #ccc;
-  }
-
-  th, td {
-    padding: 10px;
-    text-align: left;
-  }
-
-  th {
-    background-color: #007bff;
-    color: white;
-  }
-
-  tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-
-  tr:hover {
-    background-color: #f1f1f1;
-  }
+/* Optional: global box-sizing for stability */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+/* Add this at the end of your editor.module.css */
+.monaco-wrapper {
+  background: #191919;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
