@@ -25,7 +25,6 @@ const CodeEditor: React.FC = () => {
   // Tabs logic
   const [selectedTab, setSelectedTab] = useState(0);
   const [customInput, setCustomInput] = useState("");
-  const [customOutput, setCustomOutput] = useState(""); // Optionally computed after code runs!
 
   // Editor code and language
   const [code, setCode] = useState("");
@@ -87,7 +86,6 @@ const CodeEditor: React.FC = () => {
   } else {
     isCustom = true;
     currentInput = customInput;
-    currentOutput = customOutput;
   }
 
   // Editor code for changing language
