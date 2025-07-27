@@ -139,14 +139,14 @@ const UserDashboard = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className="header">
-        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
+        <button onClick={() => { handleLogout(), navigate("/login") }} style={{ marginRight: "30px" }}>Logout</button>
       </header>
       <div className="container">
         <button className="back-btn" onClick={() => navigate("/admindashboard")}>

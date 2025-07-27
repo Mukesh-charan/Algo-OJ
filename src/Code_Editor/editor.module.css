@@ -36,8 +36,10 @@
 
 /* Container for top 75% with problem info and scrollable statement */
 .questionContent {
-  flex: 0 0 70%;       /* Occupy 75% height */
-  min-height: 0;       /* Important for flexbox scroll to work */
+  flex: 0 0 70%;
+  /* Occupy 75% height */
+  min-height: 0;
+  /* Important for flexbox scroll to work */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -52,18 +54,20 @@
   white-space: pre-line;
   margin-bottom: 12px;
   box-sizing: border-box;
-  padding-right: 8px; /* For scrollbar space */
+  padding-right: 8px;
+  /* For scrollbar space */
 }
 
 /* Bottom 25% with testcase tabs and panel */
 .testcasePanel {
-  flex: 0 0 30%;      /* Occupy 25% height */
+  flex: 0 0 30%;
+  overflow-y: auto;
+  /* Occupy 25% height */
   min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   box-sizing: border-box;
-  overflow: hidden;
   padding-top: 6px;
 }
 
@@ -164,6 +168,7 @@
 *::after {
   box-sizing: border-box;
 }
+
 /* Add this at the end of your editor.module.css */
 .monaco-wrapper {
   background: #191919;

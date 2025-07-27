@@ -21,7 +21,7 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    
+
     const hashedPassword = await bcrypt.hash(password, process.env.JWT_SECRET);
 
     // Create a new user object
@@ -64,7 +64,7 @@ export const loginUser = async (req, res) => {
     // Compare the entered password with the hashed password in the database
     const hashedPassword = await bcrypt.hash(password, process.env.JWT_SECRET);
 
-    if (hashedPassword==user.password) {
+    if (hashedPassword == user.password) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 

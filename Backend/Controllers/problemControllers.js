@@ -1,7 +1,5 @@
 import Problem from '../Models/Problem.js';
-import dotenv from 'dotenv';
-dotenv.config();
-// Get all problems
+
 export const getProblems = async (req, res) => {
   try {
     const problems = await Problem.find();
@@ -22,11 +20,11 @@ export const getProblemById = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-// Create a new problem
+
 export const createProblem = async (req, res) => {
-  const { name, difficulty,points, problemStatement, sampleInput, sampleOutput, testcases } = req.body;
+  const { name, difficulty, points, visibility, problemStatement, sampleInput, sampleOutput, testcases } = req.body;
   try {
-    const newProblem = new Problem({ name, difficulty,points, problemStatement, sampleInput, sampleOutput, testcases });
+    const newProblem = new Problem({ name, difficulty, points, visibility, problemStatement, sampleInput, sampleOutput, testcases });
     await newProblem.save();
     res.status(201).json(newProblem);
   } catch (err) {
@@ -36,7 +34,6 @@ export const createProblem = async (req, res) => {
 };
 
 
-// Update an existing problem
 export const updateProblem = async (req, res) => {
   try {
     const updatedProblem = await Problem.findByIdAndUpdate(
@@ -50,7 +47,6 @@ export const updateProblem = async (req, res) => {
   }
 };
 
-// Delete a problem
 export const deleteProblem = async (req, res) => {
   try {
     await Problem.findByIdAndDelete(req.params.id);

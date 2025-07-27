@@ -16,7 +16,7 @@ const Register: React.FC = () => {
   const [message, setMessage] = useState<string>("");
 
   // Initialize useNavigate
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,13 +27,13 @@ const Register: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setError(""); // Reset error message
     setMessage(""); // Reset success message
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/auth/register", 
+        "http://localhost:8000/api/auth/register",
         formData
       );
       setMessage(response.data.message); // Success message
@@ -117,17 +117,17 @@ const Register: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className={styles.header}>
         <h1>Random(Compile)</h1>
       </header>
 
       <div className={styles.loginContainer}>
-        
+
         <h2>Register</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
         {message && <p style={{ color: "green" }}>{message}</p>} {/* Display success message */}

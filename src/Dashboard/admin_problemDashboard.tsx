@@ -123,38 +123,38 @@ const ProblemDashboard: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className="header">
-        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
+        <button onClick={() => { handleLogout(), navigate("/login") }} style={{ marginRight: "30px" }}>Logout</button>
       </header>
       <div className="container">
-      <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Dashboard</button>
-      
-      <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px"}}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="search-bar"
-          placeholder="Search problems..."
-          style={{flex:5}}
-        />
-        <select
-          value={difficulty}
-          onChange={e => setDifficulty(e.target.value)}
-          className="search-bar"
+        <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Dashboard</button>
 
-          style={{flex:1}}
-        >
-          <option value="">Select difficulty</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="search-bar"
+            placeholder="Search problems..."
+            style={{ flex: 5 }}
+          />
+          <select
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+            className="search-bar"
+
+            style={{ flex: 1 }}
+          >
+            <option value="">Select difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
         </div>
         {filteredProblems.length === 0 ? (
           <div>No problems found.</div>

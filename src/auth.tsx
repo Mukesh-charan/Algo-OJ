@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate} from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -33,7 +33,7 @@ export function RoleProtectedRoute({ children, role }: RoleProtectedRouteProps):
 
   return <>{children}</>;
 }
-export function handleLogout(){
-    localStorage.removeItem("token");
-    localStorage.removeItem("userType");
+export function handleLogout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userType");
 };

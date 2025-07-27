@@ -48,7 +48,7 @@ const Login: React.FC = () => {
       } else {
         navigate("/dashboard");
       }
-      
+
 
     } catch (error: any) {
       // Show error message if login fails
@@ -129,11 +129,11 @@ const Login: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className={styles.header}>
         <h1>Random(Compile)</h1>
       </header>
@@ -145,7 +145,7 @@ const Login: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            
+
             <label htmlFor="usernameOrEmail">Username or Email:</label>
             <input
               type="text"

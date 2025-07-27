@@ -24,6 +24,8 @@ const EditProblem: React.FC = () => {
   const [sampleIO, setSampleIO] = useState<TestCase[]>([{ input: "", output: "" }]);
   const [testcases, setTestcases] = useState<TestCase[]>([{ input: "", output: "" }]);
   const [loading, setLoading] = useState(true);
+  const [visibility, setVisibility] = useState(true);
+  const [points, setPoints] = useState<number>(0);
 
   useEffect(() => {
     if (!id) return;
@@ -36,6 +38,7 @@ const EditProblem: React.FC = () => {
         setName(data.name || "");
         setDifficulty(data.difficulty || "");
         setProblemStatement(data.problemStatement || "");
+        setPoints(data.points || 0);
 
         if (Array.isArray(data.sampleInput) && Array.isArray(data.sampleOutput)) {
           const samples = data.sampleInput.map((input: string, idx: number) => ({
@@ -99,6 +102,8 @@ const EditProblem: React.FC = () => {
       await axios.put(`${API_URL}/${id}`, {
         name: name.trim(),
         difficulty,
+        points,
+        visibility,
         problemStatement: problemStatement.trim(),
         sampleInput: filteredSampleInput,
         sampleOutput: filteredSampleOutput,
@@ -186,14 +191,14 @@ const EditProblem: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className="header">
-        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
+        <button onClick={() => { handleLogout(), navigate("/login") }} style={{ marginRight: "30px" }}>Logout</button>
       </header>
       <div className="addcontainer">
         <form onSubmit={handleSubmit} className="add-form" noValidate>
@@ -221,6 +226,25 @@ const EditProblem: React.FC = () => {
             <option value="Hard">Hard</option>
           </select>
 
+          <label>Points:</label>
+
+          <input
+            required
+            className="input-full"
+            value={points}
+            onChange={e => setPoints(Number(e.target.value))}
+          />
+
+          <label htmlFor="visibility">User Visibility:</label>
+          <select
+            id="visibility"
+            className="input-full"
+            value={visibility ? "true" : "false"}
+            onChange={e => setVisibility(e.target.value === "true")}
+          >
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
           <label htmlFor="problemStatement">Problem Statement:</label>
           <textarea
             id="problemStatement"
@@ -320,7 +344,7 @@ const EditProblem: React.FC = () => {
               type="button"
               className="button-action"
               style={{ backgroundColor: "#eee", color: "#1245a4" }}
-              onClick={() => navigate("/problemDashboard")}
+              onClick={() => navigate("/editContest")}
             >
               Cancel
             </button>

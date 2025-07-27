@@ -22,6 +22,7 @@ const AddProblem: React.FC = () => {
   const [points, setPoints] = useState(0);
   const [sampleIO, setSampleIO] = useState<TestCase[]>([{ input: "", output: "" }]);
   const [testcases, setTestcases] = useState<TestCase[]>([{ input: "", output: "" }]);
+  const [visibility, setVisibility] = useState<boolean>(true);
 
   const handleAddSample = () => {
     setSampleIO([...sampleIO, { input: "", output: "" }]);
@@ -67,13 +68,14 @@ const AddProblem: React.FC = () => {
         name,
         difficulty,
         points,
+        visibility,
         problemStatement,
         sampleInput: filteredSampleInput,
         sampleOutput: filteredSampleOutput,
         testcases,
       });
       alert("Problem added successfully");
-      navigate("/adminDashboard");
+      navigate(-1);
     } catch (error) {
       console.error("Failed to add problem:", error);
       alert("Error adding problem");
@@ -153,129 +155,141 @@ const AddProblem: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />  
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className="header">
-        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
-        <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
+        <button onClick={() => { handleLogout(), navigate("/login") }} style={{ marginRight: "30px" }}>Logout</button>
       </header>
-    <div className="addcontainer">
-      <form onSubmit={handleSubmit} className="add-form">
-        <label>Problem Name:</label>
-        <input
-          required
-          className="input-full"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
+      <div className="addcontainer">
+        <form onSubmit={handleSubmit} className="add-form">
+          <label>Problem Name:</label>
+          <input
+            required
+            className="input-full"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
 
-        <label>Difficulty:</label>
-        <select
-          required
-          className="input-full"
-          value={difficulty}
-          onChange={e => setDifficulty(e.target.value)}
-        >
-          <option value="">Select difficulty</option>
-          <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
-          <option value="Hard">Hard</option>
-        </select>
+          <label>Difficulty:</label>
+          <select
+            required
+            className="input-full"
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+          >
+            <option value="">Select difficulty</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
 
-        <label>Points:</label>
+          <label>Points:</label>
 
-        <input
-          required
-          className="input-full"
-          value={points}
-          onChange={e => setPoints(Number(e.target.value))}
-        />
+          <input
+            required
+            className="input-full"
+            value={points}
+            onChange={e => setPoints(Number(e.target.value))}
+          />
 
-        <label>Problem Statement:</label>
-        <textarea
-          rows={5}
-          required
-          className="input-full"
-          value={problemStatement}
-          onChange={e => setProblemStatement(e.target.value)}
-        />
+          <label htmlFor="visibility">User Visibility:</label>
+          <select
+            id="visibility"
+            className="input-full"
+            value={visibility ? "true" : "false"}
+            onChange={e => setVisibility(e.target.value === "true")}
+          >
+            <option value="true">True</option>
+            <option value="false">False</option>
+          </select>
 
-        <label>Sample Input/Output</label>
-        {sampleIO.map((io, idx) => (
-          <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
-            <input
-              required
-              className="input-flex"
-              value={io.input}
-              onChange={e => handleSampleChange(idx, "input", e.target.value)}
-              placeholder="Sample Input"
-            />
-            <input
-              required
-              className="input-flex"
-              value={io.output}
-              onChange={e => handleSampleChange(idx, "output", e.target.value)}
-              placeholder="Sample Output"
-            />
-            {sampleIO.length > 1 && (
-              <button type="button" className="btn-remove" onClick={() => handleRemoveSample(idx)} aria-label="Remove sample">
-                &minus;
-              </button>
-            )}
-            {idx === sampleIO.length - 1 && (
-              <button type="button" className="btn-add" onClick={handleAddSample} aria-label="Add sample">
-                +
-              </button>
-            )}
-          </div>
-        ))}
 
-        <label>Main Testcases</label>
-        {testcases.map((tc, idx) => (
-          <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
-            <input
-              required
-              className="input-flex"
-              value={tc.input}
-              onChange={e => handleTestcaseChange(idx, "input", e.target.value)}
-              placeholder="Testcase Input"
-            />
-            <input
-              required
-              className="input-flex"
-              value={tc.output}
-              onChange={e => handleTestcaseChange(idx, "output", e.target.value)}
-              placeholder="Testcase Output"
-            />
-            {testcases.length > 1 && (
-              <button type="button" className="btn-remove" onClick={() => handleRemoveTestcase(idx)} aria-label="Remove testcase">
-                &minus;
-              </button>
-            )}
-            {idx === testcases.length - 1 && (
-              <button type="button" className="btn-add" onClick={handleAddTestcase} aria-label="Add testcase">
-                +
-              </button>
-            )}
-          </div>
-        ))}
+          <label>Problem Statement:</label>
+          <textarea
+            rows={5}
+            required
+            className="input-full"
+            value={problemStatement}
+            onChange={e => setProblemStatement(e.target.value)}
+          />
 
-        <button type="submit" className="button-action">
-          Submit
-        </button>
-        <button
-          type="button"
-          className="button-action"
-          style={{ backgroundColor: "#eee", color: "#1245a4" }}
-          onClick={() => navigate("/problemDashboard")}
-        >
-          Cancel
-        </button>
-      </form>
-    </div>
+          <label>Sample Input/Output</label>
+          {sampleIO.map((io, idx) => (
+            <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
+              <input
+                required
+                className="input-flex"
+                value={io.input}
+                onChange={e => handleSampleChange(idx, "input", e.target.value)}
+                placeholder="Sample Input"
+              />
+              <input
+                required
+                className="input-flex"
+                value={io.output}
+                onChange={e => handleSampleChange(idx, "output", e.target.value)}
+                placeholder="Sample Output"
+              />
+              {sampleIO.length > 1 && (
+                <button type="button" className="btn-remove" onClick={() => handleRemoveSample(idx)} aria-label="Remove sample">
+                  &minus;
+                </button>
+              )}
+              {idx === sampleIO.length - 1 && (
+                <button type="button" className="btn-add" onClick={handleAddSample} aria-label="Add sample">
+                  +
+                </button>
+              )}
+            </div>
+          ))}
+
+          <label>Main Testcases</label>
+          {testcases.map((tc, idx) => (
+            <div style={{ display: "flex", gap: "8px", marginBottom: 7 }} key={idx}>
+              <input
+                required
+                className="input-flex"
+                value={tc.input}
+                onChange={e => handleTestcaseChange(idx, "input", e.target.value)}
+                placeholder="Testcase Input"
+              />
+              <input
+                required
+                className="input-flex"
+                value={tc.output}
+                onChange={e => handleTestcaseChange(idx, "output", e.target.value)}
+                placeholder="Testcase Output"
+              />
+              {testcases.length > 1 && (
+                <button type="button" className="btn-remove" onClick={() => handleRemoveTestcase(idx)} aria-label="Remove testcase">
+                  &minus;
+                </button>
+              )}
+              {idx === testcases.length - 1 && (
+                <button type="button" className="btn-add" onClick={handleAddTestcase} aria-label="Add testcase">
+                  +
+                </button>
+              )}
+            </div>
+          ))}
+
+          <button type="submit" className="button-action">
+            Submit
+          </button>
+          <button
+            type="button"
+            className="button-action"
+            style={{ backgroundColor: "#eee", color: "#1245a4" }}
+            onClick={() => navigate("/problemDashboard")}
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

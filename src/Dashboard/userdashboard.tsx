@@ -14,6 +14,7 @@ interface Problem {
   name: string;
   difficulty: string;
   points: number;
+  visibility: boolean;
 }
 
 const Dashboard: React.FC = () => {
@@ -123,20 +124,20 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <Particles
-            id="welcome-particles"
-            init={particlesInit}
-            options={particlesOptions}
-            className="particles-container"
-          />
+        id="welcome-particles"
+        init={particlesInit}
+        options={particlesOptions}
+        className="particles-container"
+      />
       <header className="header">
-        <h1 style={{marginLeft: "120px"}}>Random(Compile)</h1>
+        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
         {!localStorage.getItem("token") ? (
-          <button onClick={() => {navigate("/login")}} style={{marginRight: "30px"}}>Login</button>
-        ):(
-          <button onClick={() => {handleLogout(), navigate("/login")}} style={{marginRight: "30px"}}>Logout</button>
+          <button onClick={() => { navigate("/login") }} style={{ marginRight: "30px" }}>Login</button>
+        ) : (
+          <button onClick={() => { handleLogout(), navigate("/login") }} style={{ marginRight: "30px" }}>Logout</button>
         )
-      }
-        
+        }
+
       </header>
       <div className="container">
         {localStorage.getItem("userType") === "admin" ? (
@@ -145,26 +146,26 @@ const Dashboard: React.FC = () => {
           </button>
         ) : null}
 
-      <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px"}}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="search-bar"
-          placeholder="Search problems..."
-          style={{flex:5}}
-        />
-        <select
-          value={difficulty}
-          onChange={e => setDifficulty(e.target.value)}
-          className="search-bar"
+        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="search-bar"
+            placeholder="Search problems..."
+            style={{ flex: 5 }}
+          />
+          <select
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+            className="search-bar"
 
-          style={{flex:1}}
-        >
-          <option value="">Select difficulty</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
+            style={{ flex: 1 }}
+          >
+            <option value="">Select difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
         </div>
         {filteredProblems.length === 0 ? (
           <div>No problems found.</div>
@@ -177,24 +178,24 @@ const Dashboard: React.FC = () => {
               <div style={{ flex: 1 }}>Actions</div>
             </div>
             <div className="problem-list">
-              {filteredProblems.map((problem) =>
-              (
-                <div key={problem._id} className="problem-item" style={{ alignItems: "center" }}>
-                  <div style={{ flex: 4 }}>{problem.name}</div>
-                  <div style={{ flex: 2 }}>{problem.difficulty}</div>
-                  <div style={{ flex: 2 }}>{problem.points}</div>
-                  <div className="problem-actions" style={{ flex: 1 }}>
-                  
-                    <button className="button-action"
-                      onClick={() => handleSolve(problem._id)}
-                    >
-                      Solve
-                    </button>
+              {filteredProblems
+                .filter(problem => problem.visibility)
+                .map(problem => (
+                  <div key={problem._id} className="problem-item" style={{ alignItems: "center" }}>
+                    <div style={{ flex: 4 }}>{problem.name}</div>
+                    <div style={{ flex: 2 }}>{problem.difficulty}</div>
+                    <div style={{ flex: 2 }}>{problem.points}</div>
+                    <div className="problem-actions" style={{ flex: 1 }}>
+                      <button
+                        className="button-action"
+                        onClick={() => handleSolve(problem._id)}
+                      >
+                        Solve
+                      </button>
+                    </div>
                   </div>
-                  </div>
-                  
-              )
-              )}
+                ))}
+
             </div>
           </>
         )}

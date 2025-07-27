@@ -9,6 +9,9 @@ import EditProblem from './Dashboard/editProblem.tsx';
 import UserDashboard from './Dashboard/admin_userdashboard.tsx';
 import Dashboard from './Dashboard/userdashboard.tsx';
 import CodeEditor from './Code_Editor/codeEditor.tsx';
+import ContestDashboard from './Dashboard/contestdashboard.tsx';
+import AddContest from './Dashboard/addcontest.tsx';
+import EditContest from './Dashboard/editContest.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
 export default function App() {
@@ -59,16 +62,40 @@ export default function App() {
           </RoleProtectedRoute>
         }
       />
+      <Route
+        path="/contest"
+        element={
+          <RoleProtectedRoute role="admin">
+            <ContestDashboard />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/addcontest"
+        element={
+          <RoleProtectedRoute role="admin">
+            <AddContest />
+          </RoleProtectedRoute>
+        }
+      />
+      <Route
+        path="/editContest/:id"
+        element={
+          <RoleProtectedRoute role="admin">
+            <EditContest />
+          </RoleProtectedRoute>
+        }
+      />
       {/* Protected routes - any logged-in user */}
       <Route
         path="/"
         element={
-            <Dashboard />
+          <Dashboard />
         }
       />
       <Route
         path="/codeEditor/:id"
-        element={ 
+        element={
           <ProtectedRoute>
             <CodeEditor />
           </ProtectedRoute>
