@@ -126,7 +126,7 @@ const Register: React.FC = () => {
         <h1>Random(Compile)</h1>
       </header>
 
-      <div className={styles.loginContainer}>
+      <div className={styles.loginContainer} style={{width:"25%"}}>
 
         <h2>Register</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}

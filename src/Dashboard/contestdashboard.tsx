@@ -12,6 +12,10 @@ const API_URL = "http://localhost:8000/api";
 interface Contest {
   _id: string;
   name: string;
+  startDate: string,
+  startTime: string,
+  endDate: string,
+  endTime: string,
 }
 
 const ContestDashboard: React.FC = () => {
@@ -145,7 +149,11 @@ const ContestDashboard: React.FC = () => {
         ) : (
           <>
             <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
-              <div style={{ flex: 4 }}>Contest</div>
+              <div style={{ flex: 3 }}>Contest</div>
+              <div style={{ flex: 1 }}>Start Date</div>
+              <div style={{ flex: 1 }}>Start Time</div>
+              <div style={{ flex: 1 }}>End Date</div>
+              <div style={{ flex: 1 }}>End Time</div>
               <div style={{ flex: 2 }}>Actions</div>
             </div>
             <div className="contest-list" style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
@@ -155,7 +163,11 @@ const ContestDashboard: React.FC = () => {
                   className="contest-item"
                   style={{ display: "flex", fontWeight: "normal", marginBottom: 12, width: "100%", alignItems: "center" }}
                 >
-                  <div style={{ flex: 4 }}>{contest.name}</div>
+                  <div style={{ flex: 3 }}>{contest.name}</div>
+                  <div style={{ flex: 1 }}>{contest.startDate}</div>
+                  <div style={{ flex: 1 }}>{contest.startTime}</div>
+                  <div style={{ flex: 1 }}>{contest.endDate}</div>
+                  <div style={{ flex: 1 }}>{contest.endTime}</div>
                   <div
                     className="contest-actions"
                     style={{ flex: 2, display: "flex", gap: "10px" }}

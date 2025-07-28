@@ -12,6 +12,7 @@ import CodeEditor from './Code_Editor/codeEditor.tsx';
 import ContestDashboard from './Dashboard/contestdashboard.tsx';
 import AddContest from './Dashboard/addcontest.tsx';
 import EditContest from './Dashboard/editContest.tsx';
+import ContestProblemDashboard from './Dashboard/contestproblem.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
 export default function App() {
@@ -98,6 +99,23 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CodeEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contest/:contestId/codeEditor/:id"
+        element={
+          <ProtectedRoute>
+            <CodeEditor />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contest/:id"
+        element={
+          <ProtectedRoute>
+            <ContestProblemDashboard />
           </ProtectedRoute>
         }
       />

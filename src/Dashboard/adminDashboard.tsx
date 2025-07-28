@@ -98,10 +98,7 @@ const AdminDashboard = () => {
           <div style={{ display: "flex", gap: "100px", width: "100%" }}>
             <button style={{ flex: 1 }} onClick={() => navigate("/problemDashboard")}><h2 style={{ color: "white" }}>Problem Management</h2></button>
             <button style={{ flex: 1 }} onClick={() => navigate("/userDashboard")}><h2 style={{ color: "white" }}>User Management</h2></button>
-          </div>
-          <div style={{ display: "flex", gap: "100px", width: "100%", marginTop: "30px" }}>
             <button style={{ flex: 1 }} onClick={() => navigate("/contest")}><h2 style={{ color: "white" }}>Contest Management</h2></button>
-            <button style={{ flex: 1 }} onClick={() => navigate("/")}><h2 style={{ color: "white" }}>User Dashboard</h2></button>
           </div>
         </div>
       </div>

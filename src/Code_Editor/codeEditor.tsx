@@ -14,7 +14,13 @@ interface TestCase {
 
 const CodeEditor: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id?: string; contestId?: string }>();
+
+  // problemId is always in id param
+  const problemId = params.id || "";
+  // contestId is optional, only present in contest route
+  const contestId = params.contestId;
+
   const [name, setName] = useState("");
   const [problemStatement, setProblemStatement] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -26,15 +32,14 @@ const CodeEditor: React.FC = () => {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState(""); // for custom input output
-
-  // Track if user has run code
   const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!problemId) return;
+
     const fetchProblem = async () => {
       try {
-        const res = await axios.get(`${API_URL}/${id}`);
+        const res = await axios.get(`${API_URL}/${problemId}`);
         const data = res.data;
         setName(data.name || "");
         setDifficulty(data.difficulty || "");
@@ -53,19 +58,18 @@ const CodeEditor: React.FC = () => {
       } catch (error) {
         console.error("Failed to fetch problem data:", error);
         alert("Failed to load problem data.");
-        navigate("/adminDashboard");
+        navigate(-1);
       } finally {
         setLoading(false);
       }
     };
-    fetchProblem();
-  }, [id, navigate]);
 
-  // Check if outputs match for test case
+    fetchProblem();
+  }, [problemId, navigate]);
+
   const outputsMatch = (test: TestCase) =>
     test.yourOutput !== undefined && test.output.trim() === (test.yourOutput || "").trim();
 
-  // Get styling for expected/your output boxes, borders shown only after hasRun
   const getOutputBoxStyle = (test: TestCase) => {
     if (!hasRun) {
       return {
@@ -84,9 +88,7 @@ const CodeEditor: React.FC = () => {
     return {
       border: "2px solid",
       borderColor: pass ? "green" : "red",
-      boxShadow: pass
-        ? "0 0 6px 2px #6fa36f55"
-        : "0 0 6px 2px #e5737355",
+      boxShadow: pass ? "0 0 6px 2px #6fa36f55" : "0 0 6px 2px #e5737355",
       borderRadius: 6,
       padding: "8px 12px",
       marginBottom: 8,
@@ -131,7 +133,6 @@ const CodeEditor: React.FC = () => {
           code,
           input,
         };
-        console.log("Payload for sample case", i, payload);
         const response = await axios.post(`http://localhost:5245/run`, payload);
         const result = response.data;
         newSampleIO[i].yourOutput =
@@ -154,7 +155,6 @@ const CodeEditor: React.FC = () => {
           code,
           input: customInput,
         };
-        console.log("Payload for custom input", payload);
         const response = await axios.post(`http://localhost:5245/run`, payload);
         const result = response.data;
         setOutput(typeof result === "string" ? result : JSON.stringify(result));
@@ -164,6 +164,26 @@ const CodeEditor: React.FC = () => {
     } catch (error) {
       setOutput("Error running code on test cases");
       console.error(error);
+    }
+  };
+
+  // Example submission handler that sends contestId conditionally
+  const handleSubmitSolution = async () => {
+    try {
+      const payload: any = {
+        problemId,
+        code,
+        language,
+      };
+      if (contestId) {
+        payload.contestId = contestId;
+      }
+      // Replace with your actual submission endpoint
+      await axios.post("http://localhost:8000/api/submissions", payload);
+      alert("Solution submitted successfully!");
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Failed to submit solution.");
     }
   };
 
@@ -184,7 +204,7 @@ const CodeEditor: React.FC = () => {
             }}
           >
             <h2 style={{ margin: 0 }}>{name}</h2>
-            <button onClick={() => navigate("/dashboard")}>Back to Dashboard</button>
+            <button onClick={() => navigate(-1)}>Back to Dashboard</button>
           </div>
           <div style={{ color: "#888", marginBottom: 12 }}>
             {difficulty} | {points} Points
@@ -197,6 +217,7 @@ const CodeEditor: React.FC = () => {
           </div>
         </div>
 
+        {/* Testcases Tabs */}
         <div className={styles.testcasePanel} style={{ marginTop: "auto" }}>
           <div className={styles["tabs-container"]} style={{ marginBottom: 8 }}>
             {allTabs.map((tab, idx) => {
@@ -218,8 +239,6 @@ const CodeEditor: React.FC = () => {
                     fontWeight: idx === selectedTab ? "bold" : "normal",
                     cursor: "pointer",
                     outline: "none",
-
-                    // Border components separate to keep colored left border on selected tab
                     borderTop: idx === selectedTab ? "2px solid #1976d2" : "1px solid #ccc",
                     borderRight: idx === selectedTab ? "2px solid #1976d2" : "1px solid #ccc",
                     borderBottom: idx === selectedTab ? "2px solid #1976d2" : "1px solid #ccc",
@@ -228,13 +247,13 @@ const CodeEditor: React.FC = () => {
                         ? testPassed
                           ? "6px solid green"
                           : testFailed
-                            ? "6px solid red"
-                            : idx === selectedTab
-                              ? "2px solid #1976d2"
-                              : "1px solid #ccc"
-                        : idx === selectedTab
+                          ? "6px solid red"
+                          : idx === selectedTab
                           ? "2px solid #1976d2"
-                          : "1px solid #ccc",
+                          : "1px solid #ccc"
+                        : idx === selectedTab
+                        ? "2px solid #1976d2"
+                        : "1px solid #ccc",
                   }}
                 >
                   {tab}
@@ -253,9 +272,7 @@ const CodeEditor: React.FC = () => {
             }}
           >
             <div style={{ marginBottom: 12 }}>
-              <label
-                style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}
-              >
+              <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
                 Input:
               </label>
               <textarea
@@ -278,14 +295,10 @@ const CodeEditor: React.FC = () => {
 
             {!isCustom && currentExpectedOutput ? (
               <div style={{ marginTop: 8 }}>
-                <label
-                  style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}
-                >
+                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
                   Expected Output:
                 </label>
-                <div style={getOutputBoxStyle(sampleIO[selectedTab])}>
-                  {currentExpectedOutput}
-                </div>
+                <div style={getOutputBoxStyle(sampleIO[selectedTab])}>{currentExpectedOutput}</div>
 
                 {currentYourOutput !== undefined ? (
                   <>
@@ -299,9 +312,7 @@ const CodeEditor: React.FC = () => {
                     >
                       Your Output:
                     </label>
-                    <div style={getOutputBoxStyle(sampleIO[selectedTab])}>
-                      {currentYourOutput}
-                    </div>
+                    <div style={getOutputBoxStyle(sampleIO[selectedTab])}>{currentYourOutput}</div>
                   </>
                 ) : null}
               </div>
@@ -309,9 +320,7 @@ const CodeEditor: React.FC = () => {
 
             {isCustom && (
               <div style={{ marginTop: 8 }}>
-                <label
-                  style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}
-                >
+                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
                   Output:
                 </label>
                 <textarea
@@ -336,12 +345,7 @@ const CodeEditor: React.FC = () => {
       {/* Right Panel - Code Editor and Run */}
       <div
         className={styles["answer-section"]}
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-        }}
+        style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}
       >
         <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
           <label htmlFor="language-select" style={{ fontWeight: "bold" }}>
@@ -406,8 +410,8 @@ const CodeEditor: React.FC = () => {
           />
         </div>
 
-        {/* Run Code Button */}
-        <div style={{ marginTop: 12 }}>
+        {/* Run and Submit Buttons */}
+        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
           <button
             onClick={handleRunCode}
             style={{
@@ -418,8 +422,7 @@ const CodeEditor: React.FC = () => {
               borderRadius: 6,
               fontSize: 16,
               cursor: "pointer",
-              width: "100%",
-              maxWidth: 160,
+              flex: 1,
               transition: "background-color 0.3s",
             }}
             onMouseEnter={(e) => {
@@ -430,6 +433,28 @@ const CodeEditor: React.FC = () => {
             }}
           >
             Run Code
+          </button>
+          <button
+            onClick={handleSubmitSolution}
+            style={{
+              backgroundColor: "#388e3c",
+              color: "white",
+              padding: "10px 20px",
+              border: "none",
+              borderRadius: 6,
+              fontSize: 16,
+              cursor: "pointer",
+              flex: 1,
+              transition: "background-color 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget.style.backgroundColor = "#2e7d32");
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget.style.backgroundColor = "#388e3c");
+            }}
+          >
+            Submit Solution
           </button>
         </div>
       </div>

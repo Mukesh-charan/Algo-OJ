@@ -44,7 +44,14 @@ const ProblemDashboard: React.FC = () => {
       console.error("Failed to delete problem:", error);
     }
   };
-
+  const handleSolve = async (id: string) => {
+    try {
+      await axios.get(`${API_URL}/problems/${id}`);
+      navigate(`/codeEditor/${id}`);
+    } catch (error) {
+      console.error("Failed to solve problem:", error);
+    }
+  };
   const filteredProblems = problems.filter((problem) =>
     problem.name.toLowerCase().includes(search.toLowerCase()) &&
     problem.difficulty.toLowerCase().includes(difficulty.toLowerCase())
@@ -174,6 +181,10 @@ const ProblemDashboard: React.FC = () => {
                   <div style={{ flex: 2 }}>{problem.difficulty}</div>
                   <div style={{ flex: 2 }}>{problem.points}</div>
                   <div className="problem-actions" style={{ flex: 2 }}>
+                    <button className="button-action" 
+                      onClick={() => handleSolve(problem._id)}>
+                        Solve
+                      </button>
                     <button className="button-action"
                       onClick={() => navigate(`/editProblem/${problem._id}`)}
                     >

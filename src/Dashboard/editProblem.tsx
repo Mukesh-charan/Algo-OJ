@@ -39,6 +39,7 @@ const EditProblem: React.FC = () => {
         setDifficulty(data.difficulty || "");
         setProblemStatement(data.problemStatement || "");
         setPoints(data.points || 0);
+        setVisibility(data.visibility || false)
 
         if (Array.isArray(data.sampleInput) && Array.isArray(data.sampleOutput)) {
           const samples = data.sampleInput.map((input: string, idx: number) => ({
@@ -111,7 +112,7 @@ const EditProblem: React.FC = () => {
       });
 
       alert("Problem updated successfully");
-      navigate("/adminDashboard");
+      navigate(-1);
     } catch (error) {
       console.error("Failed to update problem:", error);
       alert("Error updating problem");
@@ -242,6 +243,7 @@ const EditProblem: React.FC = () => {
             value={visibility ? "true" : "false"}
             onChange={e => setVisibility(e.target.value === "true")}
           >
+            <option value="">Select user Visibility</option>
             <option value="true">True</option>
             <option value="false">False</option>
           </select>
@@ -344,7 +346,7 @@ const EditProblem: React.FC = () => {
               type="button"
               className="button-action"
               style={{ backgroundColor: "#eee", color: "#1245a4" }}
-              onClick={() => navigate("/editContest")}
+              onClick={() => navigate(-1)}
             >
               Cancel
             </button>

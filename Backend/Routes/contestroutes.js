@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getContests, createContest, updateContest, deleteContest, getContestById } from '../Controllers/contestControllers.js';
+import { getContests, createContest, updateContest, deleteContest, getContestById, registerUserToContest, removeUserFromContest } from '../Controllers/contestControllers.js';
 
 // GET all problems
 router.get('/', getContests);
@@ -14,5 +14,9 @@ router.put('/:id', updateContest);
 
 // DELETE a problem
 router.delete('/:id', deleteContest);
+
+router.post('/:id/register',registerUserToContest);
+
+router.post('/:id/removeUser', removeUserFromContest);
 
 export default router;

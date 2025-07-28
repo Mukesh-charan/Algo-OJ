@@ -284,7 +284,7 @@ const AddProblem: React.FC = () => {
             type="button"
             className="button-action"
             style={{ backgroundColor: "#eee", color: "#1245a4" }}
-            onClick={() => navigate("/problemDashboard")}
+            onClick={() => navigate(-1)}
           >
             Cancel
           </button>
