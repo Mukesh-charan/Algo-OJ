@@ -122,10 +122,6 @@ const EditContest: React.FC = () => {
     }
 
     try {
-      // Validate and build new Date objects only if date is provided
-
-      const startDateObj = contestStartDate ? new Date(contestStartDate) : null;
-      const endDateObj = contestEndDate ? new Date(contestEndDate) : null;
 
       // Format time as "HH:mm:ss" or null if empty
       const formattedStartTime = contestStartTime ? `${contestStartTime}:00` : null;

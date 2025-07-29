@@ -5,8 +5,8 @@ import connectDB from "./Database/db.js";
 import cors from "cors";
 import bodyParser from "body-parser";
 import problemRoutes from "./Routes/problemroutes.js";
-import contestroutes from "./Routes/contestroutes.js"
-
+import contestroutes from "./Routes/contestroutes.js";
+import submissionroutes from "./Routes/submissionroutes.js";
 dotenv.config();
 
 const app = express();
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/contests", contestroutes);
-app.use(bodyParser.json());
+app.use("/api/submissions", submissionroutes);
 
 
 app.listen(process.env.PORT, () => {

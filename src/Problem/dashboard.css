@@ -1,0 +1,168 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  position: relative;
+  z-index: 2;
+}
+
+.header {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+}
+
+.header h1 {
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.container {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1300px;
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: black;
+}
+
+.addcontainer {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgb(2, 171, 255);
+  position: absolute;
+  color: black;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  margin-top: 50px;
+  max-height: 75vh;
+  max-width: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.search-bar {
+  margin-bottom: 20px;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 6px;
+  outline: none;
+}
+
+.problem-list {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.problem-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.problem-actions button {
+  margin-left: 5px;
+  padding: 6px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-form {
+  margin-top: 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-full {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  border: 2px solid #1245a4;
+  background-color: white;
+  color: black;
+  box-sizing: border-box;
+}
+
+.input-flex {
+  flex: 1;
+  padding: 4px;
+  border-radius: 4px;
+  border: 2px solid #1245a4;
+  background-color: white;
+  color: black;
+  box-sizing: border-box;
+}
+
+.btn-remove {
+  cursor: pointer;
+  color: red;
+  background-color: white;
+  border: 2px solid #1245a4;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.btn-add {
+  cursor: pointer;
+  color: green;
+  background-color: #f0f4fc;
+  border: 2px solid #1245a4;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-weight: bold;
+  font-size: 22px;
+  margin-left: 5px;
+}
+
+.button-action {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 16px;
+  border: none;
+  background-color: #1245a4;
+  color: white;
+  cursor: pointer;
+  margin: 4px 0;
+}
+
+.add-problem-btn {
+  margin-top: 40px;
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  background-color: #1245a4;
+  color: white;
+  border: none;
+  cursor: pointer;
+}

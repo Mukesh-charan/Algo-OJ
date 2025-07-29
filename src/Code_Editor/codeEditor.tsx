@@ -33,6 +33,10 @@ const CodeEditor: React.FC = () => {
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState(""); // for custom input output
   const [hasRun, setHasRun] = useState(false);
+  const [testcases, setTestcases] = useState<{ input: string; output: string }[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   useEffect(() => {
     if (!problemId) return;
@@ -44,7 +48,18 @@ const CodeEditor: React.FC = () => {
         setName(data.name || "");
         setDifficulty(data.difficulty || "");
         setProblemStatement(data.problemStatement || "");
-        setPoints(data.points || 0);
+        setPoints(data.points || 0);// state
+
+
+        // inside fetchProblem, after getting data:
+        if (Array.isArray(data.testcases) && data.testcases.length > 0) {
+          setTestcases(
+            data.testcases.map((tc: any) => ({ input: tc.input, output: tc.output }))
+          );
+        } else {
+          setTestcases([]);
+        }
+
 
         if (Array.isArray(data.sampleInput) && Array.isArray(data.sampleOutput)) {
           const samples = data.sampleInput.map((input: string, idx: number) => ({
@@ -124,6 +139,7 @@ const CodeEditor: React.FC = () => {
   };
 
   const handleRunCode = async () => {
+    setIsRunning(true);
     try {
       const newSampleIO = [...sampleIO];
       for (let i = 0; i < newSampleIO.length; i++) {
@@ -164,28 +180,125 @@ const CodeEditor: React.FC = () => {
     } catch (error) {
       setOutput("Error running code on test cases");
       console.error(error);
+    } finally {
+      setIsRunning(false);
     }
   };
 
   // Example submission handler that sends contestId conditionally
   const handleSubmitSolution = async () => {
+    if (!code.trim()) {
+      alert("No code to submit!");
+      console.warn("Submission aborted: No code provided.");
+      return;
+    }
+    if (!testcases || testcases.length === 0) {
+      alert("No testcases found for this problem!");
+      console.warn("Submission aborted: No testcases available.");
+      return;
+    }
+  
+  
+    let status = "Accepted";
+    let runTime = "0ms";
+    let passedCount = 0;
+    const startTime = Date.now();
+  
     try {
-      const payload: any = {
-        problemId,
-        code,
-        language,
-      };
-      if (contestId) {
-        payload.contestId = contestId;
+      // Run code on ALL testcases sequentially
+      for (const [index, tc] of testcases.entries()) {
+  
+        const payload = {
+          language,
+          code,
+          input: tc.input,
+        };
+  
+  
+        const response = await axios.post("http://localhost:5245/run", payload);
+        const result = response.data;
+  
+
+  
+        if (typeof result === "object" && result.status === "TLE") {
+          console.warn(`Testcase #${index + 1} caused TLE.`);
+          status = "TLE";
+          break; // stop further testing
+        }
+  
+        // Try to extract the actual output string
+        let yourOutput = "";
+        if (typeof result.output === "string") {
+          yourOutput = result.output;
+        } else if (typeof result === "string") {
+          yourOutput = result;
+        } else if (result.stdout) {
+          yourOutput = result.stdout;
+        } else {
+          yourOutput = JSON.stringify(result);
+        }
+  
+  
+        if (yourOutput.trim() === tc.output.trim()) {
+          passedCount++;
+        } else {
+          console.warn(`Testcase #${index + 1} failed.`);
+          if (status !== "TLE") {
+            status = "Wrong Answer"; // only downgrade if no TLE occurred yet
+          }
+        }
       }
-      // Replace with your actual submission endpoint
-      await axios.post("http://localhost:8000/api/submissions", payload);
-      alert("Solution submitted successfully!");
-    } catch (error) {
-      console.error("Submission failed:", error);
-      alert("Failed to submit solution.");
+  
+      runTime = (Date.now() - startTime) + "ms";
+  
+      // Save submission code file to backend to get UUID
+      const submitRes = await axios.post("http://localhost:5245/submit", { language, code });
+      
+  
+      const uuid = submitRes.data.uuid;
+      if (!uuid) {
+        console.error("UUID not returned from /submit endpoint.");
+        alert("Failed to save submission file.");
+        return;
+      }
+  
+      // Calculate points based on passed testcases
+      const maxPoints = points || 0;
+      const achievedPoints =
+        status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * maxPoints);
+  
+      // Prepare payload for saving submission metadata to backend
+      const submissionPayload = {
+        problemId,
+        contestId: contestId || "", // optional
+        points: achievedPoints,
+        status,
+        submissionTime: new Date().toISOString(),
+        runTime,
+        userId: localStorage.getItem("_id") || "anonymous",
+        userName: localStorage.getItem("username") || "anonymous",
+        problemName: name,
+        uuid,
+      };
+  
+  
+      // IMPORTANT: Check your backend API URL here!
+      // Is it `http://localhost:8000/api/submissions` or something else?
+      const backendSubmissionUrl = "http://localhost:8000/api/submissions";
+  
+      const saveRes = await axios.post(backendSubmissionUrl, submissionPayload);
+  
+  
+      alert(
+        `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${maxPoints}`
+      );
+    } catch (error: any) {
+      console.error("Submission error caught:", error);
+      alert(`Failed to submit solution: ${error?.message || error}`);
     }
   };
+  
+
 
   return (
     <div
@@ -247,13 +360,13 @@ const CodeEditor: React.FC = () => {
                         ? testPassed
                           ? "6px solid green"
                           : testFailed
-                          ? "6px solid red"
-                          : idx === selectedTab
-                          ? "2px solid #1976d2"
-                          : "1px solid #ccc"
+                            ? "6px solid red"
+                            : idx === selectedTab
+                              ? "2px solid #1976d2"
+                              : "1px solid #ccc"
                         : idx === selectedTab
-                        ? "2px solid #1976d2"
-                        : "1px solid #ccc",
+                          ? "2px solid #1976d2"
+                          : "1px solid #ccc",
                   }}
                 >
                   {tab}
@@ -414,47 +527,50 @@ const CodeEditor: React.FC = () => {
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
           <button
             onClick={handleRunCode}
+            disabled={isRunning || isSubmitting}
             style={{
-              backgroundColor: "#1976d2",
+              backgroundColor: isRunning ? "#90caf9" : "#1976d2",
               color: "white",
               padding: "10px 20px",
               border: "none",
               borderRadius: 6,
               fontSize: 16,
-              cursor: "pointer",
+              cursor: isRunning || isSubmitting ? "not-allowed" : "pointer",
               flex: 1,
               transition: "background-color 0.3s",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget.style.backgroundColor = "#115293");
+              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#115293";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget.style.backgroundColor = "#1976d2");
+              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#1976d2";
             }}
           >
-            Run Code
+            {isRunning ? "Running..." : "Run Code"}
           </button>
+
           <button
             onClick={handleSubmitSolution}
+            disabled={isRunning || isSubmitting}
             style={{
-              backgroundColor: "#388e3c",
+              backgroundColor: isSubmitting ? "#a5d6a7" : "#388e3c",
               color: "white",
               padding: "10px 20px",
               border: "none",
               borderRadius: 6,
               fontSize: 16,
-              cursor: "pointer",
+              cursor: isRunning || isSubmitting ? "not-allowed" : "pointer",
               flex: 1,
               transition: "background-color 0.3s",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget.style.backgroundColor = "#2e7d32");
+              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#2e7d32";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget.style.backgroundColor = "#388e3c");
+              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#388e3c";
             }}
           >
-            Submit Solution
+            {isSubmitting ? "Submitting..." : "Submit Solution"}
           </button>
         </div>
       </div>

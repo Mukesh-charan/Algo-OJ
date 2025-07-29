@@ -2,17 +2,17 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './Login/Login.tsx';
 import Register from './Login/Register.tsx';
-import ProblemDashboard from './Dashboard/admin_problemDashboard.tsx';
+import ProblemDashboard from './Problem/admin_problemDashboard.tsx';
 import AdminDashboard from './Dashboard/admindashboard.tsx';
-import AddProblem from './Dashboard/addproblem.tsx';
-import EditProblem from './Dashboard/editProblem.tsx';
+import AddProblem from './Problem/addproblem.tsx';
+import EditProblem from './Problem/editProblem.tsx';
 import UserDashboard from './Dashboard/admin_userdashboard.tsx';
 import Dashboard from './Dashboard/userdashboard.tsx';
 import CodeEditor from './Code_Editor/codeEditor.tsx';
-import ContestDashboard from './Dashboard/contestdashboard.tsx';
-import AddContest from './Dashboard/addcontest.tsx';
-import EditContest from './Dashboard/editContest.tsx';
-import ContestProblemDashboard from './Dashboard/contestproblem.tsx';
+import ContestDashboard from './Contest/contestdashboard.tsx';
+import AddContest from './Contest/addcontest.tsx';
+import EditContest from './Contest/editContest.tsx';
+import ContestProblemDashboard from './Contest/contestproblem.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
 export default function App() {

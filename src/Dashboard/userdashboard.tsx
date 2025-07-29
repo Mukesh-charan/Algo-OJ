@@ -40,6 +40,7 @@ const Dashboard: React.FC = () => {
   const [contests, setContests] = useState<Contest[]>([]);
   const [loadingContests, setLoadingContests] = useState<boolean>(true);
   const [processingContestId, setProcessingContestId] = useState<string | null>(null);
+  
 
   const userId = localStorage.getItem("_id") || ""; // adjust storage key as per your app
   const username = localStorage.getItem("username") || "";
@@ -83,13 +84,8 @@ const Dashboard: React.FC = () => {
   });
 
   const isUserRegistered = (contest: Contest) => {
-    console.log("Checking registration for contest:", contest.name);
-    console.log("Users in contest:", contest.users);
-    console.log("Current userId:", userId);
-    // Defensive check:
     if (!contest.users || contest.users.length === 0) return false;
     return contest.users.some(user => {
-      console.log("Comparing contest user id:", user.id, " with current userId:", userId);
       return user.id === userId;
     });
   };
@@ -227,7 +223,7 @@ const Dashboard: React.FC = () => {
               const started = hasContestStarted(contest);
 
               let actionButton;
-              if (started) {
+              if (started && registered) {
                 // Show Start button during contest running (between start and end)
                 actionButton = (
                   <button 
@@ -302,7 +298,6 @@ const Dashboard: React.FC = () => {
             <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
               <div style={{ flex: 4 }}>Problem</div>
               <div style={{ flex: 2 }}>Difficulty</div>
-              <div style={{ flex: 2 }}>Points</div>
               <div style={{ flex: 1 }}>Actions</div>
             </div>
             <div className="problem-list">
@@ -312,7 +307,6 @@ const Dashboard: React.FC = () => {
                   <div key={problem._id} className="problem-item" style={{ alignItems: "center" }}>
                     <div style={{ flex: 4 }}>{problem.name}</div>
                     <div style={{ flex: 2 }}>{problem.difficulty}</div>
-                    <div style={{ flex: 2 }}>{problem.points}</div>
                     <div className="problem-actions" style={{ flex: 1 }}>
                       <button className="button-action" onClick={() => handleSolve(problem._id)}>
                         Solve
