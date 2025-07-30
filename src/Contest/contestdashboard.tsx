@@ -12,10 +12,10 @@ const API_URL = "http://localhost:8000/api";
 interface Contest {
   _id: string;
   name: string;
-  startDate: string,
-  startTime: string,
-  endDate: string,
-  endTime: string,
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
 }
 
 const ContestDashboard: React.FC = () => {
@@ -172,6 +172,12 @@ const ContestDashboard: React.FC = () => {
                     className="contest-actions"
                     style={{ flex: 2, display: "flex", gap: "10px" }}
                   >
+                    <button
+                      className="button-action"
+                      onClick={() => navigate(`/contest/${contest._id}/leaderboard`)}
+                    >
+                      LeaderBoard
+                    </button>
                     <button
                       className="button-action"
                       onClick={() => navigate(`/editContest/${contest._id}`)}

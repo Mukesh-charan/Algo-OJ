@@ -1,7 +1,6 @@
 import Submission from "../Models/Submission.js";
 
 export const createSubmission = async (req, res) => {
-  console.log("Received Submission body:", req.body);
   
     const {problemId,contestId,points,status,submissionTime,runTime,userId,userName,problemName,uuid} = req.body;
     try{
@@ -36,6 +35,19 @@ export const getSubmissions = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
   };
+
+  export const getSubmissionsByContestId = async (req, res) => {
+    try {
+      const { contestId } = req.params;
+      // Find all submissions with this contestId (as string)
+      const submissions = await Submission.find({ contestId: contestId });
+      res.status(200).json(submissions);
+    } catch (err) {
+      console.error("Error fetching submissions by contestId:", err);
+      res.status(500).json({ error: err.message || "Internal server error" });
+    }
+  };
+  
 
   export const deleteSubmission = async (req, res) => {
     try {

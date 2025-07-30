@@ -33,7 +33,8 @@ interface ContestUser {
     startTime: string; // e.g. "10:00:00"
     endDate: string;
     endTime: string;
-    users: ContestUser[]; // array of users registered for the contest
+    users: ContestUser[];
+    type:boolean; // array of users registered for the contest
   }
   
 
@@ -50,7 +51,8 @@ const EditContest: React.FC = () => {
   const [contestEndDate, setContestEndDate] = useState<string>("");
   const [contestStartTime, setContestStartTime] = useState<string>("");
   const [contestEndTime, setContestEndTime] = useState<string>("");
-
+  const [type, setType] = useState<boolean>(true);
+  console.log(type);
   // Helper: extract date part as "YYYY-MM-DD"
   const toDateString = (isoDateString: string | null | undefined): string =>
     isoDateString ? new Date(isoDateString).toISOString().slice(0, 10) : "";
@@ -62,7 +64,7 @@ const EditContest: React.FC = () => {
         const contest = contestResponse.data;
 
         setContestName(contest.name);
-
+        setType(contest.type);
         // Use different variable names to avoid shadowing state setters
         const formattedStartDate = toDateString(contest.startDate); // "YYYY-MM-DD"
         const formattedEndDate = toDateString(contest.endDate);
@@ -134,6 +136,7 @@ const EditContest: React.FC = () => {
         endDate: contestEndDate.toString(),
         endTime: formattedEndTime,
         problems: selectedProblems.map((p) => ({ id: p._id! })),
+        type:type,
       };
       
       
@@ -255,7 +258,16 @@ const EditContest: React.FC = () => {
           onChange={(e) => setContestEndTime(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
-
+        <label htmlFor="type">Code Editor Type:</label>
+          <select
+            id="type"
+            className="input-full"
+            value={type ? "true" : "false"}
+            onChange={e => setType(e.target.value === "true")}
+          >
+            <option value="true">Random</option>
+            <option value="false">Normal</option>
+          </select>
         <button className="add-problem-btn" onClick={() => navigate("/addProblem")}>
           Add New Problem
         </button>
@@ -315,7 +327,7 @@ const EditContest: React.FC = () => {
             );
           })}
         </div>
-
+        
         <button onClick={handleUpdate} className="button-action" style={{ marginTop: 20, padding: "10px 20px", fontSize: 16 }}>
           Update Contest
         </button>

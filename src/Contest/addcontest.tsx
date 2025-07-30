@@ -30,6 +30,7 @@ const AddContest: React.FC = () => {
   const [contestStartTime, setContestStartTime] = useState("");
   const [contestEndDate, setContestEndDate] = useState("");
   const [contestEndTime, setContestEndTime] = useState("");
+  const [type, setType] = useState<boolean>(true);
 
   // Fetch existing problems for selection
   useEffect(() => {
@@ -111,6 +112,7 @@ const AddContest: React.FC = () => {
         endDate: contestEndDate.toString(),
         endTime: contestEndTime + ":00",
         problems: postedProblems.map(p => ({ id: p._id })),
+        type: type,
       };
 
       console.log(contestPayload);
@@ -219,6 +221,16 @@ const AddContest: React.FC = () => {
           onChange={e => setContestEndTime(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
+        <label htmlFor="type">Code Editor Type:</label>
+          <select
+            id="type"
+            className="input-full"
+            value={type ? "true" : "false"}
+            onChange={e => setType(e.target.value === "true")}
+          >
+            <option value="true">Random</option>
+            <option value="false">Normal</option>
+          </select>
 
         <button className="add-problem-btn" onClick={() => navigate("/addProblem")} style={{ marginBottom: 20 }}>
           Add New Problem

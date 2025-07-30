@@ -21,31 +21,22 @@
   box-sizing: border-box;
 }
 
-/* Right: Answer/Editor Section */
-.answer-section {
-  flex: 1 1 50%;
-  max-width: 50%;
-  padding: 10px;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-/* Left panel internal split */
-
-/* Container for top 75% with problem info and scrollable statement */
 .questionContent {
   flex: 0 0 70%;
-  /* Occupy 75% height */
   min-height: 0;
-  /* Important for flexbox scroll to work */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
-/* Scrollable problem statement area */
+.questionContestContent {
+  flex: 0 0 60%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
 .problemStatementScrollable {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -55,14 +46,12 @@
   margin-bottom: 12px;
   box-sizing: border-box;
   padding-right: 8px;
-  /* For scrollbar space */
 }
 
-/* Bottom 25% with testcase tabs and panel */
+/* Bottom panel with testcases */
 .testcasePanel {
   flex: 0 0 30%;
   overflow-y: auto;
-  /* Occupy 25% height */
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -71,14 +60,12 @@
   padding-top: 6px;
 }
 
-/* Tabs container style */
 .tabs-container {
   display: flex;
   gap: 4px;
   margin-bottom: 4px;
 }
 
-/* Tab buttons */
 .tabButton {
   color: black;
   background: #f7f7f7;
@@ -91,14 +78,12 @@
   user-select: none;
 }
 
-/* Active tab styling */
 .activeTab {
   background: #e3f0fa;
   border-bottom: 2px solid #1976d2;
   font-weight: bold;
 }
 
-/* Tab panel under tabs */
 .tab-panel {
   color: black;
   border: 1px solid #ccc;
@@ -109,7 +94,6 @@
   flex-shrink: 0;
 }
 
-/* Test case input and output style */
 .testcase-input,
 .testcase-output {
   color: black;
@@ -125,7 +109,6 @@
   font-family: monospace, monospace;
 }
 
-/* Language Dropdown style */
 .language-dropdown {
   margin-bottom: 12px;
   max-width: 200px;
@@ -137,7 +120,6 @@
   color: black;
 }
 
-/* Editor container */
 .editor-container {
   height: 100%;
   margin-top: 0;
@@ -147,29 +129,7 @@
   box-sizing: border-box;
 }
 
-/* Code editor textarea */
-.code-textarea {
-  width: 100%;
-  height: 100%;
-  font-size: 18px;
-  font-family: monospace, monospace;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  box-sizing: border-box;
-  resize: none;
-  background-color: white;
-  color: black;
-}
-
-/* Optional: global box-sizing for stability */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-/* Add this at the end of your editor.module.css */
+/* Monaco editor wrapper styles */
 .monaco-wrapper {
   background: #191919;
   color: #fff;
@@ -179,4 +139,41 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+}
+
+/* Button hover styles used in inline code */
+.run-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.run-button:hover:not(:disabled) {
+  background-color: #115293;
+}
+
+.submit-button {
+  background-color: #388e3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #2e7d32;
+}
+
+/* Disabled state for buttons */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

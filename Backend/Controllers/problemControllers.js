@@ -22,9 +22,9 @@ export const getProblemById = async (req, res) => {
 };
 
 export const createProblem = async (req, res) => {
-  const { name, difficulty, points, visibility, problemStatement, sampleInput, sampleOutput, testcases } = req.body;
+  const { name, difficulty, points, visibility, problemStatement,random, sampleInput, sampleOutput, testcases } = req.body;
   try {
-    const newProblem = new Problem({ name, difficulty, points, visibility, problemStatement, sampleInput, sampleOutput, testcases });
+    const newProblem = new Problem({ name, difficulty, points, visibility, problemStatement,random, sampleInput, sampleOutput, testcases });
     await newProblem.save();
     res.status(201).json(newProblem);
   } catch (err) {

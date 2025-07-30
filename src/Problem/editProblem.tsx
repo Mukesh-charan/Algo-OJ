@@ -26,10 +26,12 @@ const EditProblem: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [visibility, setVisibility] = useState(true);
   const [points, setPoints] = useState<number>(0);
+  const [maxLines, setMaxLines] = useState<number>(0);
+  const [random, setRandom] = useState<number[]>([]);
+  const [randomsize,setRandomSize] = useState<number>(0);
 
   useEffect(() => {
     if (!id) return;
-
     const fetchProblem = async () => {
       try {
         const res = await axios.get(`${API_URL}/${id}`);
@@ -40,6 +42,7 @@ const EditProblem: React.FC = () => {
         setProblemStatement(data.problemStatement || "");
         setPoints(data.points || 0);
         setVisibility(data.visibility || false)
+        setRandomSize(data.random.length)
 
         if (Array.isArray(data.sampleInput) && Array.isArray(data.sampleOutput)) {
           const samples = data.sampleInput.map((input: string, idx: number) => ({
@@ -67,7 +70,17 @@ const EditProblem: React.FC = () => {
 
     fetchProblem();
   }, [id, navigate]);
-
+  const shuffleArray = (array: number[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+  const gen = (max: number) => {
+    const arr = Array.from({ length: max }, (_, i) => i);
+    return shuffleArray(arr);
+  };
   if (loading) return <div>Loading...</div>;
 
   // Handlers for sampleIO
@@ -105,6 +118,7 @@ const EditProblem: React.FC = () => {
         difficulty,
         points,
         visibility,
+        random,
         problemStatement: problemStatement.trim(),
         sampleInput: filteredSampleInput,
         sampleOutput: filteredSampleOutput,
@@ -256,6 +270,17 @@ const EditProblem: React.FC = () => {
             value={problemStatement}
             onChange={e => setProblemStatement(e.target.value)}
             maxLength={5000}
+          />
+          <label>Max Lines:</label>
+          <input
+            required
+            className="input-full"
+            value={randomsize}
+            onChange={e => {
+              const val = Number(e.target.value);
+              setMaxLines(val);
+              setRandom(gen(val));
+            }}
           />
 
           <label>Sample Input/Output</label>

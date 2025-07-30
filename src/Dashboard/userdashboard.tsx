@@ -30,6 +30,7 @@ interface Contest {
   endDate: string;
   endTime: string;
   users: ContestUser[];
+  type:boolean,
 }
 
 const Dashboard: React.FC = () => {
@@ -208,13 +209,14 @@ const Dashboard: React.FC = () => {
         ) : activeContests.length === 0 ? (
           <p>No contests available currently.</p>
         ) : (
-          <div style={{ marginBottom: "25px", width: "100%", marginLeft: "50px" }}>
+          <div style={{ marginBottom: "25px", width: "100%", marginLeft: "150px" }}>
             <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
-              <div style={{ flex: 4 }}>Contest Name</div>
+              <div style={{ flex: 3 }}>Contest Name</div>
               <div style={{ flex: 1 }}>Start Date</div>
               <div style={{ flex: 1 }}>Start Time</div>
               <div style={{ flex: 1 }}>End Date</div>
               <div style={{ flex: 1 }}>End Time</div>
+              <div style={{ flex: 1 }}>Coding Style</div>
               <div style={{ flex: 2 }}>Action</div>
             </div>
 
@@ -256,11 +258,12 @@ const Dashboard: React.FC = () => {
 
               return (
                 <div key={contest._id} style={{ display: "flex", alignItems: "center", marginBottom: 8, width: "100%" }}>
-                  <div style={{ flex: 4, fontWeight:"bold"}}>{contest.name}</div>
+                  <div style={{ flex: 3, fontWeight:"bold"}}>{contest.name}</div>
                   <div style={{ flex: 1 }}>{contest.startDate}</div>
                   <div style={{ flex: 1 }}>{contest.startTime}</div>
                   <div style={{ flex: 1 }}>{contest.endDate}</div>
                   <div style={{ flex: 1 }}>{contest.endTime}</div>
+                  <div style={{ flex: 1 }}>{contest.type ? "Random" : "Normal"}</div>
                   <div style={{ flex: 2 }}>{actionButton}</div>
                 </div>
               );

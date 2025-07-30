@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { type } from 'os';
 
 const TestCaseSchema = new mongoose.Schema({
   input: { type: String, required: true },
@@ -11,6 +12,7 @@ const ProblemSchema = new mongoose.Schema({
   points: { type: Number, required: true },
   visibility: { type: Boolean, required: true },
   problemStatement: { type: String, required: true },
+  random:{type:Array},
   sampleInput: [{ type: String, required: true }],
   sampleOutput: [{ type: String, required: true }],
   testcases: [TestCaseSchema]

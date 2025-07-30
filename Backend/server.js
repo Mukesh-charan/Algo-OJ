@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import authRoutes from "./Routes/authroutes.js";
 import connectDB from "./Database/db.js";
 import cors from "cors";
-import bodyParser from "body-parser";
 import problemRoutes from "./Routes/problemroutes.js";
 import contestroutes from "./Routes/contestroutes.js";
 import submissionroutes from "./Routes/submissionroutes.js";

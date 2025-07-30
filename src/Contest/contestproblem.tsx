@@ -24,6 +24,10 @@ interface Contest {
   _id: string;
   name: string;
   problems: ContestProblem[];
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
 }
 
 const ContestProblemDashboard: React.FC = () => {
@@ -48,7 +52,6 @@ const ContestProblemDashboard: React.FC = () => {
         const contestRes = await axios.get<Contest>(`${API_URL}/contests/${id}`);
         const contest = contestRes.data;
         setContestName(contest.name);
-
         const problemIds = contest.problems.map((p) => p.id);
 
         if (problemIds.length === 0) {
@@ -196,7 +199,7 @@ const ContestProblemDashboard: React.FC = () => {
       </header>
       <div className="container">
       <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>
-        <button onClick={()=>navigate("")} style={{flex:1}}>Leaderboard</button>
+        <button onClick={()=>navigate(`/contest/${id}/leaderboard`)} style={{flex:1}}>Leaderboard</button>
         <button onClick={()=> navigate("/dashboard")} style={{flex:1}}>End contest</button>
         </div>
         <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>

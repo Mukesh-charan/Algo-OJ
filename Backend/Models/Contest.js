@@ -21,6 +21,7 @@ const ContestSchema = new mongoose.Schema({
   endTime: { type: String ,required: true },
   problems: [contestProblemsSchema],
   users: [contestUsersSchema],
+  type:{ type: String},
 });
 
 

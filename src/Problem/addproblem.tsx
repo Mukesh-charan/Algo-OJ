@@ -23,6 +23,9 @@ const AddProblem: React.FC = () => {
   const [sampleIO, setSampleIO] = useState<TestCase[]>([{ input: "", output: "" }]);
   const [testcases, setTestcases] = useState<TestCase[]>([{ input: "", output: "" }]);
   const [visibility, setVisibility] = useState<boolean>(true);
+  const [maxLines, setMaxLines] = useState<number>(0);
+  const [random, setRandom] = useState<number[]>([]);
+
 
   const handleAddSample = () => {
     setSampleIO([...sampleIO, { input: "", output: "" }]);
@@ -70,6 +73,7 @@ const AddProblem: React.FC = () => {
         points,
         visibility,
         problemStatement,
+        random,
         sampleInput: filteredSampleInput,
         sampleOutput: filteredSampleOutput,
         testcases,
@@ -81,6 +85,20 @@ const AddProblem: React.FC = () => {
       alert("Error adding problem");
     }
   };
+  // Fisher-Yates shuffle algorithm
+  const shuffleArray = (array: number[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const generateRandomArray = (max: number) => {
+    const arr = Array.from({ length: max }, (_, i) => i);
+    return shuffleArray(arr);
+  };
+
   const particlesInit = async (engine: Engine) => {
     try {
       await loadSlim(engine);
@@ -215,6 +233,17 @@ const AddProblem: React.FC = () => {
             className="input-full"
             value={problemStatement}
             onChange={e => setProblemStatement(e.target.value)}
+          />
+          <label>Max Lines:</label>
+          <input
+            required
+            className="input-full"
+            value={maxLines}
+            onChange={e => {
+              const val = Number(e.target.value);
+              setMaxLines(val);
+              setRandom(generateRandomArray(val));
+            }}
           />
 
           <label>Sample Input/Output</label>

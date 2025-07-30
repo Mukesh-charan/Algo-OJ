@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./editor.module.css";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import MonacoEditor from "@monaco-editor/react";
 
-const API_URL = `http://localhost:8000/api/problems`;
+const PROBLEM_API_URL = `http://localhost:8000/api/problems`;
+const CONTEST_API_URL = `http://localhost:8000/api/contests`;
 
 interface TestCase {
   input: string;
@@ -12,54 +13,135 @@ interface TestCase {
   yourOutput?: string;
 }
 
+interface Contest {
+  _id: string;
+  name: string;
+  startDate: string; // e.g. "2025-07-30"
+  startTime: string; // e.g. "14:00:00"
+  endDate: string;   // e.g. "2025-08-05"
+  endTime: string;   // e.g. "18:00:00"
+  // additional fields as necessary
+}
+
 const CodeEditor: React.FC = () => {
   const navigate = useNavigate();
   const params = useParams<{ id?: string; contestId?: string }>();
 
-  // problemId is always in id param
   const problemId = params.id || "";
-  // contestId is optional, only present in contest route
-  const contestId = params.contestId;
+  const contestId = params.contestId || "";
 
   const [name, setName] = useState("");
   const [problemStatement, setProblemStatement] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [sampleIO, setSampleIO] = useState<TestCase[]>([{ input: "", output: "" }]);
-  const [loading, setLoading] = useState(true);
   const [points, setPoints] = useState(0);
-  const [customInput, setCustomInput] = useState("");
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [code, setCode] = useState("");
+  const [testcases, setTestcases] = useState<TestCase[]>([]);
+  const [isRandomOrder, setIsRandomOrder] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Contest details & countdown timer state
+  const [contest, setContest] = useState<Contest | null>(null);
+  const [contestEnded, setContestEnded] = useState(false);
+  const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
+
+  // Code editor related
   const [language, setLanguage] = useState("python");
-  const [output, setOutput] = useState(""); // for custom input output
+  const [code, setCode] = useState("");
+  const [customInput, setCustomInput] = useState("");
+  const [output, setOutput] = useState("");
   const [hasRun, setHasRun] = useState(false);
-  const [testcases, setTestcases] = useState<{ input: string; output: string }[]>([]);
+  const [randomOrder, setRandomOrder] = useState<number[]>([]);
+  const [codeLines, setCodeLines] = useState<String[]>([])
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  // Execution states
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Fetch Contest data if contestId present
+  useEffect(() => {
+
+    const fetchContest = async () => {
+      try {
+        const res = await axios.get(`${CONTEST_API_URL}/${contestId}`);
+        const data: Contest = res.data;
+        setContest(data);
+        setupContestTimer(data);
+        setIsRandomOrder(res.data.type)
+      } catch (error) {
+        console.error("Failed to fetch contest data:", error);
+      }
+    };
+
+    if (contestId) {
+      fetchContest();
+    }
+  }, [contestId]);
+
+  // Setup countdown timer for contest end time
+  const setupContestTimer = (contest: Contest) => {
+    // Combine contest.endDate and endTime into JS Date
+    const endDateTimeStr = `${contest.endDate}T${contest.endTime}`;
+    const endTime = new Date(endDateTimeStr);
+
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = endTime.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setContestEnded(true);
+        setTimeLeftMs(0);
+
+        // Clear timer
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+        }
+      } else {
+        setTimeLeftMs(diff);
+        setContestEnded(false);
+      }
+    };
+
+    updateTimer();
+
+    // Clear previous interval just in case
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+    }
+
+    timerIntervalRef.current = setInterval(updateTimer, 1000);
+  };
+
+  // Fetch problem data AND testcases
   useEffect(() => {
     if (!problemId) return;
 
     const fetchProblem = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get(`${API_URL}/${problemId}`);
+        const res = await axios.get(`${PROBLEM_API_URL}/${problemId}`);
         const data = res.data;
+
         setName(data.name || "");
         setDifficulty(data.difficulty || "");
         setProblemStatement(data.problemStatement || "");
-        setPoints(data.points || 0);// state
+        setPoints(data.points || 0);
 
+        const fetchedCodeLines: string[] = (data.starterCode || "").split("\n");
+        setCodeLines(fetchedCodeLines);
 
-        // inside fetchProblem, after getting data:
+        const fetchedRandomOrder: number[] = Array.isArray(data.random) ? data.random : [];
+        setRandomOrder(fetchedRandomOrder);
+
+        // Set testcases and sample IO as per your existing logic
         if (Array.isArray(data.testcases) && data.testcases.length > 0) {
-          setTestcases(
-            data.testcases.map((tc: any) => ({ input: tc.input, output: tc.output }))
-          );
+          const tc = data.testcases.map((t: any) => ({ input: t.input, output: t.output }));
+          setTestcases(tc);
         } else {
           setTestcases([]);
         }
-
 
         if (Array.isArray(data.sampleInput) && Array.isArray(data.sampleOutput)) {
           const samples = data.sampleInput.map((input: string, idx: number) => ({
@@ -82,6 +164,87 @@ const CodeEditor: React.FC = () => {
     fetchProblem();
   }, [problemId, navigate]);
 
+
+  useEffect(() => {
+    // Wait until codeLines is loaded
+    if (codeLines.length === 0) return;
+
+    if (isRandomOrder) {
+      // Prepare randomized lines by placing codeLines in positions from randomOrder
+      const totalLines = randomOrder.length || codeLines.length;
+      const randomizedLines = Array(totalLines).fill("");
+
+      randomOrder.forEach((pos: number, i: number) => {
+        randomizedLines[pos] = codeLines[i] ?? "";
+      });
+
+      const randomizedCode = randomizedLines.join("\n");
+      setCode(randomizedCode);
+    } else {
+      // Normal order with all code lines as-is
+      setCode(codeLines.join("\n"));
+    }
+  }, [isRandomOrder, randomOrder, codeLines]);
+
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Formatting timeLeftMs into hh:mm:ss and % for timer bar
+  const formatTimeLeft = (ms: number) => {
+    if (ms <= 0) return "0s";
+
+    const totalSec = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
+
+    return `${hours > 0 ? hours + "h " : ""}${minutes > 0 ? minutes + "m " : ""
+      }${seconds}s`;
+  };
+  function reorderToOriginal(code: string, randomOrder: number[]): string {
+    const lines = code.split("\n");
+    // Explicitly declare the type as string[]
+    const inverseOrder: string[] = [];
+    randomOrder.forEach((origIdx, shuffledIdx) => {
+      inverseOrder[origIdx] = lines[shuffledIdx] ?? "";
+    });
+    return inverseOrder.join("\n");
+  }
+
+  function handleEditorChange(value: string) {
+    const lines = value.split('\n');
+    if (!isRandomOrder && lines.length > randomOrder.length) {
+      const trimmed = lines.slice(0, randomOrder.length).join('\n');
+      setCode(trimmed);
+    } else {
+      setCode(value);
+    }
+  }
+  // Calculate % elapsed for timer bar
+  const getContestProgressPercent = () => {
+    if (!contest) return 0;
+
+    const startDateTime = new Date(`${contest.startDate}T${contest.startTime}`).getTime();
+    const endDateTime = new Date(`${contest.endDate}T${contest.endTime}`).getTime();
+    const now = Date.now();
+
+    if (now >= endDateTime) return 100;
+    if (now <= startDateTime) return 0;
+
+    return ((now - startDateTime) / (endDateTime - startDateTime)) * 100;
+  };
+
+  // If contest ended, disable submit/run buttons & show message
+  const disableActions = contestEnded;
+
+  // Output box style helper, your existing logic
   const outputsMatch = (test: TestCase) =>
     test.yourOutput !== undefined && test.output.trim() === (test.yourOutput || "").trim();
 
@@ -114,39 +277,31 @@ const CodeEditor: React.FC = () => {
     } as React.CSSProperties;
   };
 
-  if (loading) return <>Loading...</>;
+  // Your existing handler functions (run, submit) can be reused here with added disable of buttons based on contestEnded
+
+  // Render loading
+  if (loading) return <div>Loading...</div>;
 
   const testCaseTabs = sampleIO.map((_, idx) => `Test Case ${idx + 1}`);
   const allTabs = [...testCaseTabs, "Custom Input"];
   const lastTabIndex = allTabs.length - 1;
-
-  const handleTabClick = (idx: number) => {
-    setSelectedTab(idx);
-    setOutput("");
-  };
 
   const isCustom = selectedTab === lastTabIndex;
   const currentInput = isCustom ? customInput : sampleIO[selectedTab]?.input || "";
   const currentExpectedOutput = isCustom ? "" : sampleIO[selectedTab]?.output || "";
   const currentYourOutput = isCustom ? "" : sampleIO[selectedTab]?.yourOutput || "";
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLanguage(e.target.value);
-  };
-
-  const handleEditorChange = (value?: string) => {
-    setCode(value || "");
-  };
-
+  // Example stub of your run and submit handlers to show disable buttons (You should implement or reuse your full functions)
   const handleRunCode = async () => {
     setIsRunning(true);
     try {
       const newSampleIO = [...sampleIO];
+      const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
       for (let i = 0; i < newSampleIO.length; i++) {
         const input = newSampleIO[i].input || "";
         const payload = {
           language,
-          code,
+          code: orderedCode,
           input,
         };
         const response = await axios.post(`http://localhost:5245/run`, payload);
@@ -187,6 +342,7 @@ const CodeEditor: React.FC = () => {
 
   // Example submission handler that sends contestId conditionally
   const handleSubmitSolution = async () => {
+    setIsSubmitting(true);
     if (!code.trim()) {
       alert("No code to submit!");
       console.warn("Submission aborted: No code provided.");
@@ -197,35 +353,36 @@ const CodeEditor: React.FC = () => {
       console.warn("Submission aborted: No testcases available.");
       return;
     }
-  
-  
+
+
     let status = "Accepted";
     let runTime = "0ms";
     let passedCount = 0;
     const startTime = Date.now();
-  
+    const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
+
     try {
       // Run code on ALL testcases sequentially
       for (const [index, tc] of testcases.entries()) {
-  
+
         const payload = {
           language,
-          code,
+          code: orderedCode,
           input: tc.input,
         };
-  
-  
+
+
         const response = await axios.post("http://localhost:5245/run", payload);
         const result = response.data;
-  
 
-  
+
+
         if (typeof result === "object" && result.status === "TLE") {
           console.warn(`Testcase #${index + 1} caused TLE.`);
           status = "TLE";
           break; // stop further testing
         }
-  
+
         // Try to extract the actual output string
         let yourOutput = "";
         if (typeof result.output === "string") {
@@ -237,8 +394,8 @@ const CodeEditor: React.FC = () => {
         } else {
           yourOutput = JSON.stringify(result);
         }
-  
-  
+
+
         if (yourOutput.trim() === tc.output.trim()) {
           passedCount++;
         } else {
@@ -248,25 +405,25 @@ const CodeEditor: React.FC = () => {
           }
         }
       }
-  
+
       runTime = (Date.now() - startTime) + "ms";
-  
+
       // Save submission code file to backend to get UUID
       const submitRes = await axios.post("http://localhost:5245/submit", { language, code });
-      
-  
+
+
       const uuid = submitRes.data.uuid;
       if (!uuid) {
         console.error("UUID not returned from /submit endpoint.");
         alert("Failed to save submission file.");
         return;
       }
-  
+
       // Calculate points based on passed testcases
       const maxPoints = points || 0;
       const achievedPoints =
         status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * maxPoints);
-  
+
       // Prepare payload for saving submission metadata to backend
       const submissionPayload = {
         problemId,
@@ -280,58 +437,84 @@ const CodeEditor: React.FC = () => {
         problemName: name,
         uuid,
       };
-  
-  
+
+
       // IMPORTANT: Check your backend API URL here!
       // Is it `http://localhost:8000/api/submissions` or something else?
       const backendSubmissionUrl = "http://localhost:8000/api/submissions";
-  
+
       const saveRes = await axios.post(backendSubmissionUrl, submissionPayload);
-  
-  
+
+
       alert(
         `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${maxPoints}`
       );
+
     } catch (error: any) {
       console.error("Submission error caught:", error);
       alert(`Failed to submit solution: ${error?.message || error}`);
+    } finally {
+      setIsSubmitting(false)
     }
   };
-  
 
 
   return (
-    <div
-      className={styles.container}
-      style={{ display: "flex", height: "100vh", gap: 20, padding: 16 }}
-    >
+    <div className={styles.container} style={{ display: "flex", height: "100vh", gap: 20, padding: 16 }}>
       {/* Left Panel - Problem */}
-      <div className={styles["question-section"]}>
-        <div className={styles.questionContent}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 8,
-            }}
-          >
+      <div className={styles["question-section"]} style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+        <div className={contestId != "" ? styles.questionContestContent : styles.questionContent}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <h2 style={{ margin: 0 }}>{name}</h2>
             <button onClick={() => navigate(-1)}>Back to Dashboard</button>
           </div>
           <div style={{ color: "#888", marginBottom: 12 }}>
             {difficulty} | {points} Points
           </div>
-          <div
-            className={styles.problemStatementScrollable}
-            style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}
-          >
+          <div className={styles.problemStatementScrollable} style={{ whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
             {problemStatement}
           </div>
         </div>
 
+        {/* Contest timer bar, only if contestId present */}
+        {contestId && contest && (
+          <div style={{ marginTop: "auto", paddingTop: 10 }}>
+            <div style={{ marginBottom: 4, fontWeight: "bold", fontSize: 14, color: contestEnded ? "red" : "#1976d2" }}>
+              Contest ends in: {timeLeftMs !== null ? formatTimeLeft(timeLeftMs) : "-"}
+            </div>
+            <div
+              style={{
+                height: 12,
+                backgroundColor: "#ddd",
+                borderRadius: 6,
+                overflow: "hidden",
+                boxShadow: "inset 0 1px 3px rgba(0,0,0,0.2)",
+              }}
+              aria-label="Contest Progress"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={getContestProgressPercent()}
+            >
+              <div
+                style={{
+                  width: `${getContestProgressPercent()}%`,
+                  height: "100%",
+                  backgroundColor: contestEnded ? "#e57373" : "#1976d2",
+                  transition: "width 1s linear",
+                }}
+              />
+            </div>
+            {contestEnded && (
+              <div style={{ color: "red", fontWeight: "bold", marginTop: 8 }}>
+                Contest has ended. Submissions and running code are disabled.
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Testcases Tabs */}
-        <div className={styles.testcasePanel} style={{ marginTop: "auto" }}>
+        <div className={styles.testcasePanel} style={{ marginTop: 10 }}>
           <div className={styles["tabs-container"]} style={{ marginBottom: 8 }}>
             {allTabs.map((tab, idx) => {
               const isSampleTab = idx < sampleIO.length;
@@ -341,7 +524,7 @@ const CodeEditor: React.FC = () => {
               return (
                 <button
                   key={tab}
-                  onClick={() => handleTabClick(idx)}
+                  onClick={() => setSelectedTab(idx)}
                   className={`${styles.tabButton} ${idx === selectedTab ? styles.activeTab : ""}`}
                   style={{
                     marginRight: 4,
@@ -385,9 +568,7 @@ const CodeEditor: React.FC = () => {
             }}
           >
             <div style={{ marginBottom: 12 }}>
-              <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
-                Input:
-              </label>
+              <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>Input:</label>
               <textarea
                 value={currentInput}
                 onChange={(e) => {
@@ -408,34 +589,23 @@ const CodeEditor: React.FC = () => {
 
             {!isCustom && currentExpectedOutput ? (
               <div style={{ marginTop: 8 }}>
-                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
-                  Expected Output:
-                </label>
+                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>Expected Output:</label>
                 <div style={getOutputBoxStyle(sampleIO[selectedTab])}>{currentExpectedOutput}</div>
 
-                {currentYourOutput !== undefined ? (
+                {currentYourOutput !== undefined && (
                   <>
-                    <label
-                      style={{
-                        fontWeight: "bold",
-                        display: "block",
-                        marginTop: 12,
-                        marginBottom: 4,
-                      }}
-                    >
+                    <label style={{ fontWeight: "bold", display: "block", marginTop: 12, marginBottom: 4 }}>
                       Your Output:
                     </label>
                     <div style={getOutputBoxStyle(sampleIO[selectedTab])}>{currentYourOutput}</div>
                   </>
-                ) : null}
+                )}
               </div>
             ) : null}
 
             {isCustom && (
               <div style={{ marginTop: 8 }}>
-                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>
-                  Output:
-                </label>
+                <label style={{ fontWeight: "bold", display: "block", marginBottom: 4 }}>Output:</label>
                 <textarea
                   value={output}
                   readOnly
@@ -460,6 +630,7 @@ const CodeEditor: React.FC = () => {
         className={styles["answer-section"]}
         style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%" }}
       >
+        {/* Language selector */}
         <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
           <label htmlFor="language-select" style={{ fontWeight: "bold" }}>
             Language:
@@ -468,7 +639,7 @@ const CodeEditor: React.FC = () => {
             id="language-select"
             className={styles["language-dropdown"]}
             value={language}
-            onChange={handleLanguageChange}
+            onChange={(e) => setLanguage(e.target.value)}
             style={{
               padding: "6px 10px",
               fontSize: 14,
@@ -483,8 +654,19 @@ const CodeEditor: React.FC = () => {
             <option value="java">Java</option>
             {/* Add more languages if needed */}
           </select>
+          {!contestId && (
+            <button
+              type="button"
+              onClick={() => setIsRandomOrder((prev) => !prev)}
+              style={{ marginBottom: 12 }}
+            >
+              {isRandomOrder ? "Switch to Normal Code Editor" : "Switch to Random Code Editor"}
+            </button>
+          )}
+
         </div>
 
+        {/* Monaco Editor */}
         <div
           className={styles.monacoWrapper}
           style={{
@@ -505,12 +687,18 @@ const CodeEditor: React.FC = () => {
             language={language}
             theme="vs-dark"
             value={code}
-            onChange={handleEditorChange}
+            onChange={(value) => {
+              setCode(value || "");
+              handleEditorChange;
+            }}
+
             options={{
               fontSize: 16,
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               wordWrap: "on",
+              lineNumbers: (line: number) =>
+                isRandomOrder ? (randomOrder[line - 1]?.toString() || "") : line.toString(),
               autoIndent: "advanced",
               suggestOnTriggerCharacters: true,
               quickSuggestions: true,
@@ -527,7 +715,7 @@ const CodeEditor: React.FC = () => {
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
           <button
             onClick={handleRunCode}
-            disabled={isRunning || isSubmitting}
+            disabled={isRunning || isSubmitting || disableActions}
             style={{
               backgroundColor: isRunning ? "#90caf9" : "#1976d2",
               color: "white",
@@ -535,15 +723,15 @@ const CodeEditor: React.FC = () => {
               border: "none",
               borderRadius: 6,
               fontSize: 16,
-              cursor: isRunning || isSubmitting ? "not-allowed" : "pointer",
+              cursor: isRunning || isSubmitting || disableActions ? "not-allowed" : "pointer",
               flex: 1,
               transition: "background-color 0.3s",
             }}
             onMouseEnter={(e) => {
-              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#115293";
+              if (!isRunning && !isSubmitting && !disableActions) e.currentTarget.style.backgroundColor = "#115293";
             }}
             onMouseLeave={(e) => {
-              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#1976d2";
+              if (!isRunning && !isSubmitting && !disableActions) e.currentTarget.style.backgroundColor = "#1976d2";
             }}
           >
             {isRunning ? "Running..." : "Run Code"}
@@ -551,7 +739,7 @@ const CodeEditor: React.FC = () => {
 
           <button
             onClick={handleSubmitSolution}
-            disabled={isRunning || isSubmitting}
+            disabled={isRunning || isSubmitting || disableActions}
             style={{
               backgroundColor: isSubmitting ? "#a5d6a7" : "#388e3c",
               color: "white",
@@ -559,15 +747,15 @@ const CodeEditor: React.FC = () => {
               border: "none",
               borderRadius: 6,
               fontSize: 16,
-              cursor: isRunning || isSubmitting ? "not-allowed" : "pointer",
+              cursor: isRunning || isSubmitting || disableActions ? "not-allowed" : "pointer",
               flex: 1,
               transition: "background-color 0.3s",
             }}
             onMouseEnter={(e) => {
-              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#2e7d32";
+              if (!isRunning && !isSubmitting && !disableActions) e.currentTarget.style.backgroundColor = "#2e7d32";
             }}
             onMouseLeave={(e) => {
-              if (!isRunning && !isSubmitting) e.currentTarget.style.backgroundColor = "#388e3c";
+              if (!isRunning && !isSubmitting && !disableActions) e.currentTarget.style.backgroundColor = "#388e3c";
             }}
           >
             {isSubmitting ? "Submitting..." : "Submit Solution"}
