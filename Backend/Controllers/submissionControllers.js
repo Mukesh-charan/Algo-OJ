@@ -1,4 +1,6 @@
 import Submission from "../Models/Submission.js";
+import fs from 'fs';
+import path from 'path';
 
 export const createSubmission = async (req, res) => {
   
@@ -47,6 +49,24 @@ export const getSubmissions = async (req, res) => {
       res.status(500).json({ error: err.message || "Internal server error" });
     }
   };
+
+  export const getSubmissionsByUserID = async (req, res) => {
+    try {  
+      const { userId, problemId } = req.body;
+  
+      if (!userId || !problemId) {
+        console.warn("Missing userId or problemId in request body.");
+        return res.status(400).json({ error: "userId and problemId are required" });
+      }
+      const submissions = await Submission.find({ userId: userId, problemId: problemId });
+  
+      res.status(200).json(submissions);
+    } catch (err) {
+      console.error("Error fetching submissions by userId and problemId:", err);
+      res.status(500).json({ error: err.message || "Internal server error" });
+    }
+  };
+  
   
 
   export const deleteSubmission = async (req, res) => {
@@ -57,3 +77,4 @@ export const getSubmissions = async (req, res) => {
       res.status(500).json({ message: err.message });
     }
   };
+
