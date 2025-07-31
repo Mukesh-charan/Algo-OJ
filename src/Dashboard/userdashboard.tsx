@@ -30,7 +30,7 @@ interface Contest {
   endDate: string;
   endTime: string;
   users: ContestUser[];
-  type:boolean,
+  type:string,
 }
 
 const Dashboard: React.FC = () => {
@@ -263,7 +263,7 @@ const Dashboard: React.FC = () => {
                   <div style={{ flex: 1 }}>{contest.startTime}</div>
                   <div style={{ flex: 1 }}>{contest.endDate}</div>
                   <div style={{ flex: 1 }}>{contest.endTime}</div>
-                  <div style={{ flex: 1 }}>{contest.type ? "Random" : "Normal"}</div>
+                  <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
                   <div style={{ flex: 2 }}>{actionButton}</div>
                 </div>
               );

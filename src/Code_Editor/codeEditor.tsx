@@ -6,6 +6,8 @@ import MonacoEditor from "@monaco-editor/react";
 
 const PROBLEM_API_URL = `http://localhost:8000/api/problems`;
 const CONTEST_API_URL = `http://localhost:8000/api/contests`;
+const SUBMISSION_API_URL = `http://localhost:8000/api/submissions`;
+
 
 interface TestCase {
   input: string;
@@ -21,6 +23,19 @@ interface Contest {
   endDate: string;   // e.g. "2025-08-05"
   endTime: string;   // e.g. "18:00:00"
   // additional fields as necessary
+}
+interface Submission {
+  _id: string;
+  problemId: string;
+  points: number;
+  status: string;
+  submissionTime: string;   // or Date if parsed
+  runTime: string;
+  userId: string;
+  userName: string;
+  problemName: string;
+  uuid: string;
+  contestId?: string;
 }
 
 const CodeEditor: React.FC = () => {
@@ -41,6 +56,8 @@ const CodeEditor: React.FC = () => {
 
   // Contest details & countdown timer state
   const [contest, setContest] = useState<Contest | null>(null);
+  const [submissions, setSubmissions] = React.useState<Submission[]>([]);
+  const [showSubmissionTable, setShowSubmissionTable] = useState(false);
   const [contestEnded, setContestEnded] = useState(false);
   const [timeLeftMs, setTimeLeftMs] = useState<number | null>(null);
 
@@ -69,7 +86,7 @@ const CodeEditor: React.FC = () => {
         const data: Contest = res.data;
         setContest(data);
         setupContestTimer(data);
-        setIsRandomOrder(res.data.type)
+        setIsRandomOrder(res.data.type === "true" ? true : false)
       } catch (error) {
         console.error("Failed to fetch contest data:", error);
       }
@@ -166,11 +183,9 @@ const CodeEditor: React.FC = () => {
 
 
   useEffect(() => {
-    // Wait until codeLines is loaded
     if (codeLines.length === 0) return;
 
     if (isRandomOrder) {
-      // Prepare randomized lines by placing codeLines in positions from randomOrder
       const totalLines = randomOrder.length || codeLines.length;
       const randomizedLines = Array(totalLines).fill("");
 
@@ -217,6 +232,23 @@ const CodeEditor: React.FC = () => {
     });
     return inverseOrder.join("\n");
   }
+  const fetchSubmissions = async () => {
+    const userId = localStorage.getItem("_id"); // correct key
+    if (!userId || !problemId) {
+      setSubmissions([]);
+      return;
+    }
+    const payload = { userId, problemId };
+    try {
+      const res = await axios.post(`${SUBMISSION_API_URL}/usersubmission`, payload);
+      setSubmissions(res.data);
+      setShowSubmissionTable(true);
+    } catch (error) {
+      console.error("Failed to fetch submissions:", error); // corrected message
+      setSubmissions([]);
+    }
+  };
+
 
   function handleEditorChange(value: string) {
     const lines = value.split('\n');
@@ -339,7 +371,6 @@ const CodeEditor: React.FC = () => {
       setIsRunning(false);
     }
   };
-
   // Example submission handler that sends contestId conditionally
   const handleSubmitSolution = async () => {
     setIsSubmitting(true);
@@ -356,9 +387,7 @@ const CodeEditor: React.FC = () => {
 
 
     let status = "Accepted";
-    let runTime = "0ms";
     let passedCount = 0;
-    const startTime = Date.now();
     const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
 
     try {
@@ -406,8 +435,6 @@ const CodeEditor: React.FC = () => {
         }
       }
 
-      runTime = (Date.now() - startTime) + "ms";
-
       // Save submission code file to backend to get UUID
       const submitRes = await axios.post("http://localhost:5245/submit", { language, code });
 
@@ -423,29 +450,6 @@ const CodeEditor: React.FC = () => {
       const maxPoints = points || 0;
       const achievedPoints =
         status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * maxPoints);
-
-      // Prepare payload for saving submission metadata to backend
-      const submissionPayload = {
-        problemId,
-        contestId: contestId || "", // optional
-        points: achievedPoints,
-        status,
-        submissionTime: new Date().toISOString(),
-        runTime,
-        userId: localStorage.getItem("_id") || "anonymous",
-        userName: localStorage.getItem("username") || "anonymous",
-        problemName: name,
-        uuid,
-      };
-
-
-      // IMPORTANT: Check your backend API URL here!
-      // Is it `http://localhost:8000/api/submissions` or something else?
-      const backendSubmissionUrl = "http://localhost:8000/api/submissions";
-
-      const saveRes = await axios.post(backendSubmissionUrl, submissionPayload);
-
-
       alert(
         `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${maxPoints}`
       );
@@ -736,7 +740,6 @@ const CodeEditor: React.FC = () => {
           >
             {isRunning ? "Running..." : "Run Code"}
           </button>
-
           <button
             onClick={handleSubmitSolution}
             disabled={isRunning || isSubmitting || disableActions}
@@ -760,6 +763,67 @@ const CodeEditor: React.FC = () => {
           >
             {isSubmitting ? "Submitting..." : "Submit Solution"}
           </button>
+          <button onClick={fetchSubmissions}>Submissions</button>
+          {showSubmissionTable && (
+            <>
+              {/* Backdrop */}
+              <div
+                onClick={() => setShowSubmissionTable(false)}
+                style={{
+                  position: "fixed",
+                  top: 0, left: 0,
+                  width: "100vw", height: "100vh",
+                  backgroundColor: "rgba(0,0,0,0.5)",
+                  zIndex: 999,
+                }}
+              />
+              {/* Modal box */}
+              <div
+                onClick={e => e.stopPropagation()} // prevent closing modal when clicking inside
+                style={{
+                  position: "fixed",
+                  top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  backgroundColor: "white",
+                  padding: 20,
+                  borderRadius: 8,
+                  maxHeight: "80vh",
+                  width: "90%",
+                  maxWidth: 900,
+                  overflowY: "auto",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                  zIndex: 1000,
+                }}
+              >
+                <h3>Submission History</h3>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #ccc", display:"flex"}}>
+                      <th style={{flex:2}}>Submission Time</th>
+                      <th style={{flex:2}}>Points</th>
+                      <th style={{flex:2}}>Status</th>
+                      <th style={{flex:2}}>Run Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...submissions]
+                      .sort((a, b) => new Date(b.submissionTime).getTime() - new Date(a.submissionTime).getTime())
+                      .map(sub => (
+                        <tr key={sub._id} style={{ borderBottom: "1px solid #eee", display:"flex",margin:"2%"}}>
+                          <td style={{flex:2}}>{new Date(sub.submissionTime).toLocaleString()}</td>
+                          <td style={{flex:1}}>{sub.points}</td>
+                          <td style={{flex:1.2}}>{sub.status}</td>
+                          <td style={{flex:0.8}}>{sub.runTime}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <button onClick={() => setShowSubmissionTable(false)} style={{ marginTop: 15 }}>
+                  Close
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

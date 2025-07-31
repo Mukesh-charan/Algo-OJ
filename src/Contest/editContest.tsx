@@ -22,21 +22,21 @@ interface ContestProblem {
   id: string;
 }
 interface ContestUser {
-    id: string; // user id
-    username: string;
-  }
-  interface Contest {
-    _id: string;
-    name: string;
-    problems: ContestProblem[];
-    startDate: string; // e.g. "2025-07-30"
-    startTime: string; // e.g. "10:00:00"
-    endDate: string;
-    endTime: string;
-    users: ContestUser[];
-    type:boolean; // array of users registered for the contest
-  }
-  
+  id: string; // user id
+  username: string;
+}
+interface Contest {
+  _id: string;
+  name: string;
+  problems: ContestProblem[];
+  startDate: string; // e.g. "2025-07-30"
+  startTime: string; // e.g. "10:00:00"
+  endDate: string;
+  endTime: string;
+  users: ContestUser[];
+  type: string; // array of users registered for the contest
+}
+
 
 const EditContest: React.FC = () => {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const EditContest: React.FC = () => {
   const [contestEndDate, setContestEndDate] = useState<string>("");
   const [contestStartTime, setContestStartTime] = useState<string>("");
   const [contestEndTime, setContestEndTime] = useState<string>("");
-  const [type, setType] = useState<boolean>(true);
+  const [type, setType] = useState<string>("true");
   console.log(type);
   // Helper: extract date part as "YYYY-MM-DD"
   const toDateString = (isoDateString: string | null | undefined): string =>
@@ -136,10 +136,10 @@ const EditContest: React.FC = () => {
         endDate: contestEndDate.toString(),
         endTime: formattedEndTime,
         problems: selectedProblems.map((p) => ({ id: p._id! })),
-        type:type,
+        type: type,
       };
-      
-      
+
+
 
       await axios.put(`${API_URL}/contests/${id}`, contestPayload);
       alert("Contest updated successfully");
@@ -259,15 +259,16 @@ const EditContest: React.FC = () => {
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
         <label htmlFor="type">Code Editor Type:</label>
-          <select
-            id="type"
-            className="input-full"
-            value={type ? "true" : "false"}
-            onChange={e => setType(e.target.value === "true")}
-          >
-            <option value="true">Random</option>
-            <option value="false">Normal</option>
-          </select>
+        <select
+          id="type"
+          className="input-full"
+          value={type}                         
+          onChange={e => setType(e.target.value)} 
+        >
+          <option value="true">Random</option>
+          <option value="false">Normal</option>
+        </select>
+
         <button className="add-problem-btn" onClick={() => navigate("/addProblem")}>
           Add New Problem
         </button>
@@ -327,7 +328,7 @@ const EditContest: React.FC = () => {
             );
           })}
         </div>
-        
+
         <button onClick={handleUpdate} className="button-action" style={{ marginTop: 20, padding: "10px 20px", fontSize: 16 }}>
           Update Contest
         </button>
