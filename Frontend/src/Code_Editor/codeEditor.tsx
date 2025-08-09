@@ -413,7 +413,7 @@ const CodeEditor: React.FC = () => {
     try {
       const startTime = performance.now();
   
-      // Run code on all testcases sequentially
+      // ✅ Run code on all real testcases
       for (const [index, tc] of testcases.entries()) {
         const payload = {
           language,
@@ -449,7 +449,7 @@ const CodeEditor: React.FC = () => {
       const endTime = performance.now();
       const runTimeMs = Math.round(endTime - startTime);
   
-      // Save submission code file to backend to get UUID
+      // ✅ Step 1: Save code file and get UUID
       const submitFileRes = await axios.post(`${SUBMISSION_API_URL}`, {
         language,
         code: orderedCode,
@@ -462,39 +462,43 @@ const CodeEditor: React.FC = () => {
         return;
       }
   
-      // Gather other required submission fields
+      // ✅ Step 2: Send all required submission fields for DB record
       const userId = localStorage.getItem("_id") || "";
-      const userName = localStorage.getItem("userName") || ""; // Adjust key as your app uses
+      const userName = localStorage.getItem("userName") || ""; // Adjust if using a different key
       const submissionTime = new Date().toISOString();
-      const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
+      const achievedPoints =
+        status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
   
-      // Now record submission metadata
       const submissionPayload = {
         problemId,
-        contestId: contestId || undefined,
+        contestId: contestId || null,
         points: achievedPoints,
         status,
         submissionTime,
-        runTime: runTimeMs.toString(), // convert to string if your schema expects string
+        runTime: runTimeMs.toString(),
         userId,
         userName,
         problemName: name,
         uuid,
       };
   
-      await axios.post(`${SUBMISSION_API_URL}/`, submissionPayload); // Adjust endpoint (e.g., /create or just /)
+      await axios.post(`${SUBMISSION_API_URL}/create`, submissionPayload);
+      // ^ adjust to match your backend (could be just `${SUBMISSION_API_URL}` if POST / handles create)
   
-      alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
-  
+      alert(
+        `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`
+      );
     } catch (error: any) {
       console.error("Submission error caught:", error);
-      alert(`Failed to submit solution: ${error?.response?.data?.message || error.message || error}`);
+      alert(
+        `Failed to submit solution: ${
+          error?.response?.data?.message || error.message || error
+        }`
+      );
     } finally {
       setIsSubmitting(false);
     }
-  };
-  
-
+  };  
 
 
   const fetchHint = async () => {
