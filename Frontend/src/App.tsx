@@ -15,8 +15,19 @@ import EditContest from './Contest/editContest.tsx';
 import ContestProblemDashboard from './Contest/contestproblem.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx"
+import { useEffect } from 'react';
 
+const COMPILER_API_URL = `${import.meta.env.VITE_COMPILER}`;
+
+function pingCompilerApi() {
+  fetch(COMPILER_API_URL, { method: 'GET' })
+}
 export default function App() {
+  useEffect(() => {
+    pingCompilerApi();
+    const interval = setInterval(pingCompilerApi, 600000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <Routes>
       {/* Public routes */}

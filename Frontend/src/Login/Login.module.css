@@ -7,94 +7,89 @@ body {
   background-color: black;
 }
 
-/* Header styling to stretch across the full width */
+/* Header styling */
 header {
   background-color: black;
   color: white;
-  padding: 10px 20px;
+  padding: 1% 2%;
   display: flex;
   align-items: center;
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 999;
-  /* Ensure header stays above other content */
+  z-index: 999; /* Keep above content */
 }
 
-/* The logo styling */
 .header img {
-  max-width: 150px;
-  margin-right: 10px;
+  max-width: 20%; /* was 150px */
+  margin-right: 2%;
 }
 
-/* The h1 styling (for Hack-A-Ruckus text) */
 .header h1 {
   margin: 0;
   text-align: center;
-  /* Ensures the title is centered */
   flex-grow: 1;
-  /* Makes sure the title takes available space and is centered */
 }
 
 /* Login container styling */
 .loginContainer {
   background-color: rgba(255, 255, 255, 0.8);
-  padding: 50px;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  padding: 4%;
+  border-radius: 1rem;
+  box-shadow: 0 0 2rem rgba(0, 0, 0, 0.1);
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  margin-top: 40px;
-  width: 250px;
+  margin-top: 5%;
+  width: 25%; /* was 250px */
+  min-width: 220px;
+  max-width: 90%;
   display: flex;
-  position: absolute;
   flex-direction: column;
-  /* Stack children vertically */
   align-items: center;
-  /* Center children horizontally */
 }
-
 
 /* Form group styling */
 .formGroup {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .formGroup label {
   font-weight: bold;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   color: #000;
 }
 
 .formGroup input {
   width: 100%;
-  padding: 12px;
+  padding: 0.8em;
   border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
+  border-radius: 0.4rem;
+  font-size: 1rem;
   transition: border-color 0.3s ease;
   background-color: #fff;
   color: #000;
+  box-sizing: border-box;
 }
 
 .formGroup input:focus {
   border-color: #007bff;
 }
 
-/* Button styling */
+/* Login button styling */
 .loginButton {
-  width: 110%;
-  padding: 12px;
+  width: 100%;
+  padding: 0.8em;
   border: none;
   background-color: #007bff;
   color: #fff;
-  border-radius: 5px;
+  border-radius: 0.4rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .loginButton:hover {
@@ -103,7 +98,7 @@ header {
 
 /* Header text */
 h2 {
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
   text-align: center;
   color: #333;
 }
@@ -111,15 +106,25 @@ h2 {
 /* Register link styling */
 .registerLink {
   display: block;
-  /* Ensures it's a block element */
-  margin-top: 10px;
-  /* Adds spacing between the button and the link */
+  margin-top: 0.8rem;
   color: #007bff;
   text-decoration: none;
   text-align: center;
-  /* Centers the link */
 }
 
 .registerLink:hover {
   text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header img {
+    max-width: 25%;
+  }
+
+  .loginContainer {
+    width: 80%;
+    padding: 6%;
+    margin-top: 10%;
+  }
 }
