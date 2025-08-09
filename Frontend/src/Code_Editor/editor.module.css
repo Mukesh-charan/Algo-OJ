@@ -1,0 +1,179 @@
+/* Container for the two main columns */
+.container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #fafafa;
+  color: #222;
+  box-sizing: border-box;
+}
+
+/* Left: Question Section */
+.question-section {
+  height: 100%;
+  flex: 1 1 50%;
+  max-width: 50%;
+  padding: 10px;
+  background-color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.questionContent {
+  flex: 0 0 70%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.questionContestContent {
+  flex: 0 0 60%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.problemStatementScrollable {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 100%;
+  font-size: 1.1rem;
+  white-space: pre-line;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  padding-right: 8px;
+}
+
+/* Bottom panel with testcases */
+.testcasePanel {
+  flex: 0 0 30%;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding-top: 6px;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.tabButton {
+  color: black;
+  background: #f7f7f7;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  outline: none;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.activeTab {
+  background: #e3f0fa;
+  border-bottom: 2px solid #1976d2;
+  font-weight: bold;
+}
+
+.tab-panel {
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 0 0 7px 7px;
+  padding: 8px 6px;
+  background: #fff;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.testcase-input,
+.testcase-output {
+  color: black;
+  width: 100%;
+  max-height: 25px;
+  resize: vertical;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 3px;
+  padding: 5px;
+  box-sizing: border-box;
+  font-family: monospace, monospace;
+}
+
+.language-dropdown {
+  margin-bottom: 12px;
+  max-width: 200px;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+}
+
+.editor-container {
+  height: 100%;
+  margin-top: 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Monaco editor wrapper styles */
+.monaco-wrapper {
+  background: #191919;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Button hover styles used in inline code */
+.run-button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.run-button:hover:not(:disabled) {
+  background-color: #115293;
+}
+
+.submit-button {
+  background-color: #388e3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #2e7d32;
+}
+
+/* Disabled state for buttons */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
