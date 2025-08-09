@@ -457,7 +457,7 @@ const CodeEditor: React.FC = () => {
       }
 
       // Save submission code file to backend to get UUID
-      const submitRes = await axios.post(`${SUBMISSION_API_URL}submit`, { language, code });
+      const submitRes = await axios.post(`${SUBMISSION_API_URL}`, { language, code });
 
 
       const uuid = submitRes.data.uuid;
