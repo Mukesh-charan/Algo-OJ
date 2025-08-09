@@ -482,7 +482,7 @@ const CodeEditor: React.FC = () => {
         uuid,
       };
   
-      await axios.post(`${SUBMISSION_API_URL}/create`, submissionPayload); // Adjust endpoint (e.g., /create or just /)
+      await axios.post(`${SUBMISSION_API_URL}/`, submissionPayload); // Adjust endpoint (e.g., /create or just /)
   
       alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
   
