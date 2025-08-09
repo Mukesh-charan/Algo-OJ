@@ -7,10 +7,13 @@ const { generateFile } = require('./generateFile');
 const cors = require('cors');
 
 const app = express();
-
+app.use(cors({
+    origin: 'https://randomcompile.vercel.app', 
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
 
 function withTimeout(promise, timeout = 7000) {
     return Promise.race([
