@@ -392,48 +392,42 @@ const CodeEditor: React.FC = () => {
       setIsRunning(false);
     }
   };
-  // Example submission handler that sends contestId conditionally
+  
   const handleSubmitSolution = async () => {
-    setIsSubmitting(true);
+    if (disableActions) return; // Prevent action if contest ended or disabled
     if (!code.trim()) {
       alert("No code to submit!");
-      console.warn("Submission aborted: No code provided.");
       return;
     }
     if (!testcases || testcases.length === 0) {
       alert("No testcases found for this problem!");
-      console.warn("Submission aborted: No testcases available.");
       return;
     }
-
-
+  
+    setIsSubmitting(true);
+  
     let status = "Accepted";
     let passedCount = 0;
     const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
-
+  
     try {
-      // Run code on ALL testcases sequentially
+      const startTime = performance.now();
+  
+      // Run code on all testcases sequentially
       for (const [index, tc] of testcases.entries()) {
-
         const payload = {
           language,
           code: orderedCode,
           input: tc.input,
         };
-
-
         const response = await axios.post(`${COMPILER_API_URL}run`, payload);
         const result = response.data;
-
-
-
+  
         if (typeof result === "object" && result.status === "TLE") {
-          console.warn(`Testcase #${index + 1} caused TLE.`);
           status = "TLE";
-          break; // stop further testing
+          break;
         }
-
-        // Try to extract the actual output string
+  
         let yourOutput = "";
         if (typeof result.output === "string") {
           yourOutput = result.output;
@@ -444,44 +438,62 @@ const CodeEditor: React.FC = () => {
         } else {
           yourOutput = JSON.stringify(result);
         }
-
-
+  
         if (yourOutput.trim() === tc.output.trim()) {
           passedCount++;
         } else {
-          console.warn(`Testcase #${index + 1} failed.`);
-          if (status !== "TLE") {
-            status = "Wrong Answer"; // only downgrade if no TLE occurred yet
-          }
+          if (status !== "TLE") status = "Wrong Answer";
         }
       }
-
+  
+      const endTime = performance.now();
+      const runTimeMs = Math.round(endTime - startTime);
+  
       // Save submission code file to backend to get UUID
-      const submitRes = await axios.post(`${SUBMISSION_API_URL}`, { language, code });
-
-
-      const uuid = submitRes.data.uuid;
+      const submitFileRes = await axios.post(`${SUBMISSION_API_URL}`, {
+        language,
+        code: orderedCode,
+      });
+  
+      const uuid = submitFileRes.data.uuid;
       if (!uuid) {
-        console.error("UUID not returned from /submit endpoint.");
-        alert("Failed to save submission file.");
+        alert("Failed to save submission file: UUID missing.");
+        setIsSubmitting(false);
         return;
       }
-
-      // Calculate points based on passed testcases
-      const maxPoints = points || 0;
-      const achievedPoints =
-        status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * maxPoints);
-      alert(
-        `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${maxPoints}`
-      );
-
+  
+      // Gather other required submission fields
+      const userId = localStorage.getItem("_id") || "";
+      const userName = localStorage.getItem("userName") || ""; // Adjust key as your app uses
+      const submissionTime = new Date().toISOString();
+      const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
+  
+      // Now record submission metadata
+      const submissionPayload = {
+        problemId,
+        contestId: contestId || undefined,
+        points: achievedPoints,
+        status,
+        submissionTime,
+        runTime: runTimeMs.toString(), // convert to string if your schema expects string
+        userId,
+        userName,
+        problemName: name,
+        uuid,
+      };
+  
+      await axios.post(`${SUBMISSION_API_URL}/create`, submissionPayload); // Adjust endpoint (e.g., /create or just /)
+  
+      alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
+  
     } catch (error: any) {
       console.error("Submission error caught:", error);
-      alert(`Failed to submit solution: ${error?.message || error}`);
+      alert(`Failed to submit solution: ${error?.response?.data?.message || error.message || error}`);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   };
+  
 
 
 
