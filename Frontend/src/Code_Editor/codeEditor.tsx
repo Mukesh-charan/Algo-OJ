@@ -376,7 +376,7 @@ const CodeEditor: React.FC = () => {
       if (customInput.trim() !== "") {
         const payload = {
           language,
-          code,
+          code:orderedCode,
           input: customInput,
         };
         const response = await axios.post(`${COMPILER_API_URL}run`, payload);
