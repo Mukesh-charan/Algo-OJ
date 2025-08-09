@@ -1,18 +1,64 @@
 import Submission from "../Models/Submission.js";
 
 export const createSubmission = async (req, res) => {
-  
-    const {problemId,contestId,points,status,submissionTime,runTime,userId,userName,problemName,uuid} = req.body;
-    try{
-        const newSubmit = new Submission({problemId,contestId,points,status,submissionTime,runTime,userId,userName,problemName,uuid});
-        await newSubmit.save();
-        res.status(201).json(newSubmit);
-    }
-    catch(err){
-        console.error("Validation Error:", err);
-        res.status(400).json({ message: err.message, errors: err.errors });
-    }
+  // Debug: log request body
+  console.log("📥 Incoming submission request body:", req.body);
+
+  const {
+      problemId,
+      contestId,
+      points,
+      status,
+      submissionTime,
+      runTime,
+      userId,
+      userName,
+      problemName,
+      uuid
+  } = req.body;
+
+  try {
+      console.log("🔍 Creating new Submission document...");
+
+      const newSubmit = new Submission({
+          problemId,
+          contestId,
+          points,
+          status,
+          submissionTime,
+          runTime,
+          userId,
+          userName,
+          problemName,
+          uuid
+      });
+
+      console.log("🗒️ Prepared Submission object:", newSubmit);
+
+      await newSubmit.save();
+
+      console.log("✅ Submission saved successfully with ID:", newSubmit._id);
+
+      res.status(201).json(newSubmit);
+  } catch (err) {
+      console.error("❌ Error while creating submission:");
+      console.error("Message:", err.message);
+      console.error("Full error object:", err);
+
+      if (err.errors) {
+          // Mongoose validation errors
+          Object.keys(err.errors).forEach(field => {
+              console.error(`Validation error on "${field}":`, err.errors[field].message);
+          });
+      }
+
+      res.status(400).json({
+          message: err.message,
+          errors: err.errors || null
+      });
+  }
 }
+
 
 
 export const getSubmissions = async (req, res) => {
