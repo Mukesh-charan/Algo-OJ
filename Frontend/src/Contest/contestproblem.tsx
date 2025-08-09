@@ -84,7 +84,6 @@ const ContestProblemDashboard: React.FC = () => {
 
   const handleSolve = async (contestId:string, problemId: string) => {
     try {
-      await axios.get(`${API_URL}/contest/${contestId}/codeEditor/${problemId}`);
       navigate(`/contest/${contestId}/codeEditor/${problemId}`);
     } catch (error) {
       console.error("Failed to solve problem:", error);
