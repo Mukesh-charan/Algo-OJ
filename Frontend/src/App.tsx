@@ -70,7 +70,7 @@ export default function App() {
       <Route
         path="/userDashboard"
         element={
-          <RoleProtectedRoute role="admin">
+          </RoleProtectedRoute>
             <UserDashboard />
           </RoleProtectedRoute>
         }
