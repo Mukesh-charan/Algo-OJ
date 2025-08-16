@@ -4,8 +4,6 @@ import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 dotenv.config();
 
-
-// Register a new user
 export const createUser = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -21,6 +19,7 @@ export const createUser = async (req, res) => {
 
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
+
     const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
@@ -35,46 +34,87 @@ export const createUser = async (req, res) => {
   }
 };
 
-
-// Login user (check credentials)
 export const loginUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    // Basic input validation
-    if (!username && !email || !password) {
+    if ((!username && !email) || !password) {
       return res.status(400).json({ message: "Username or Email and Password are required" });
     }
 
-    // Find the user by username or email
     const user = await User.findOne({ $or: [{ username }, { email }] });
 
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
 
-    // Compare the entered password with the hashed password in the database
-    const hashedPassword = await bcrypt.hash(password, process.env.JWT_SECRET);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if (hashedPassword == user.password) {
+    if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Generate JWT token for the authenticated user
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Respond with success message and the token
     res.json({
-      user: user,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      },
       message: 'Login successful',
       token,
     });
   } catch (err) {
-    console.error('Error during login:', err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
-// Get all users
+
+export const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateUser = async (req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.username = username || user.username;
+    user.email = email || user.email;
+    user.password = password ? await bcrypt.hash(password, parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10) : user.password;
+
+    await user.save();
+
+    res.json({ message: 'User updated successfully', user });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -84,8 +124,6 @@ export const getUsers = async (req, res) => {
   }
 };
 
-
-// Update User Role
 export const updateUserRole = async (req, res) => {
   const { id } = req.params;
   const { type } = req.body;
@@ -102,10 +140,8 @@ export const updateUserRole = async (req, res) => {
     }
     res.json(updatedUser);
   } catch (err) {
-    console.error("Failed to update user role:", err);
     res.status(500).json({ message: "Failed to update user role" });
   }
 };
-
 
 export default { loginUser, createUser, getUser, deleteUser, updateUser, getUsers, updateUserRole };
