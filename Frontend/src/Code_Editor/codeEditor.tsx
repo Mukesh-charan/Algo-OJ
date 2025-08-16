@@ -413,7 +413,6 @@ const CodeEditor: React.FC = () => {
     try {
       const startTime = performance.now();
   
-      // ✅ Run code on all real testcases
       for (const [index, tc] of testcases.entries()) {
         const payload = {
           language,
