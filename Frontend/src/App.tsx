@@ -70,7 +70,9 @@ export default function App() {
       <Route
         path="/userDashboard"
         element={
+          </RoleProtectedRoute>
             <UserDashboard />
+          </RoleProtectedRoute>
         }
       />
       <Route
