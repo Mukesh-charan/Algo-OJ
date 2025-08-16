@@ -1,4 +1,3 @@
-// models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -28,14 +27,21 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Hash password before saving to DB
+// Hash password before saving to DB, but ONLY if password is modified and NOT already hashed
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
 
-  const salt = await bcrypt.genSalt(10);
+  // Check if password already looks like a bcrypt hash (starts with $2b$)
+  if (this.password.startsWith('$2b$')) {
+    return next();
+  }
+
+  const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
+  const salt = await bcrypt.genSalt(saltRounds);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Method to compare passwords

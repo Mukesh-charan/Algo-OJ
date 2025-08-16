@@ -1,7 +1,6 @@
 import Submission from "../Models/Submission.js";
 
 export const createSubmission = async (req, res) => {
-  // Debug: log request body
   console.log("📥 Incoming submission request body:", req.body);
 
   const {
