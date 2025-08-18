@@ -17,10 +17,10 @@ import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx"
 import { useEffect } from 'react';
 
-const COMPILER_API_URL = `${import.meta.env.VITE_COMPILER}`;
+const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
 
 function pingCompilerApi() {
-  fetch(COMPILER_API_URL, { method: 'GET' })
+  fetch(BACKEND_API_URL, { method: 'GET' })
 }
 export default function App() {
   useEffect(() => {
