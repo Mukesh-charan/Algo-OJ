@@ -450,8 +450,8 @@ const CodeEditor: React.FC = () => {
       console.log(`[handleSubmitSolution] Test cases done. Passed ${passedCount}/${testcases.length}. Status: ${status}. Runtime: ${runTimeMs}ms`);
   
       // Directly send submission without UUID
-      const userId = localStorage.getItem("_id") || "";
-      const userName = localStorage.getItem("userName") || ""; // Adjust if using a different key
+      const userId = localStorage._id || "";
+      const userName = localStorage.username || ""; // Adjust if using a different key
       const submissionTime = new Date().toISOString();
       const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
   
