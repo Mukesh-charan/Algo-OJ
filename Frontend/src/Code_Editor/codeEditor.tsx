@@ -468,7 +468,7 @@ const CodeEditor: React.FC = () => {
       };
   
       console.log("[handleSubmitSolution] Sending submission payload to backend:", submissionPayload);
-      await axios.post(`${SUBMISSION_API_URL}/create`, submissionPayload);
+      await axios.post(`${SUBMISSION_API_URL}/`, submissionPayload);
   
       alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
     } catch (error: any) {
