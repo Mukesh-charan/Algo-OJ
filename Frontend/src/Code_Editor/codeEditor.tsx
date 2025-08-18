@@ -411,7 +411,6 @@ const CodeEditor: React.FC = () => {
     const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
   
     try {
-      console.log("[handleSubmitSolution] Running test cases...");
       const startTime = performance.now();
   
       for (const [index, tc] of testcases.entries()) {
@@ -421,7 +420,6 @@ const CodeEditor: React.FC = () => {
   
         if (typeof result === "object" && result.status === "TLE") {
           status = "TLE";
-          console.log(`[handleSubmitSolution] Test case ${index + 1} timed out.`);
           break;
         }
   
@@ -438,18 +436,14 @@ const CodeEditor: React.FC = () => {
   
         if (yourOutput.trim() === tc.output.trim()) {
           passedCount++;
-          console.log(`[handleSubmitSolution] Test case ${index + 1} passed.`);
         } else {
           if (status !== "TLE") status = "Wrong Answer";
-          console.log(`[handleSubmitSolution] Test case ${index + 1} failed.`);
         }
       }
   
       const endTime = performance.now();
       const runTimeMs = Math.round(endTime - startTime);
-      console.log(`[handleSubmitSolution] Test cases done. Passed ${passedCount}/${testcases.length}. Status: ${status}. Runtime: ${runTimeMs}ms`);
-  
-      // Directly send submission without UUID
+      
       const userId = localStorage._id || "";
       const userName = localStorage.username || ""; // Adjust if using a different key
       const submissionTime = new Date().toISOString();
@@ -467,7 +461,6 @@ const CodeEditor: React.FC = () => {
         problemName: name
       };
   
-      console.log("[handleSubmitSolution] Sending submission payload to backend:", submissionPayload);
       await axios.post(`${SUBMISSION_API_URL}/`, submissionPayload);
   
       alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);

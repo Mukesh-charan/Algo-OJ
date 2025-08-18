@@ -1,8 +1,6 @@
 import Submission from "../Models/Submission.js";
 
 export const createSubmission = async (req, res) => {
-  console.log("📥 Incoming submission request body:", req.body);
-
   const {
       problemId,
       contestId,
@@ -17,7 +15,6 @@ export const createSubmission = async (req, res) => {
   } = req.body;
 
   try {
-      console.log("🔍 Creating new Submission document...");
 
       const newSubmit = new Submission({
           problemId,
@@ -31,12 +28,7 @@ export const createSubmission = async (req, res) => {
           problemName
       });
 
-      console.log("🗒️ Prepared Submission object:", newSubmit);
-
       await newSubmit.save();
-
-      console.log("✅ Submission saved successfully with ID:", newSubmit._id);
-
       res.status(201).json(newSubmit);
   } catch (err) {
       console.error("❌ Error while creating submission:");
