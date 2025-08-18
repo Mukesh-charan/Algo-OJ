@@ -9,8 +9,7 @@ const SubmissionSchema = new mongoose.Schema ({
     runTime:{type:String, required : true},
     userId : {type:String, required : true},
     userName: { type: String, required : true},
-    problemName : {type : String, required : true},
-    uuid : {type:String, required : true}
+    problemName : {type : String, required : true}
 })
 
 const Submission = mongoose.model('Submission',SubmissionSchema);

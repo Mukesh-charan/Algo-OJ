@@ -411,19 +411,17 @@ const CodeEditor: React.FC = () => {
     const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
   
     try {
+      console.log("[handleSubmitSolution] Running test cases...");
       const startTime = performance.now();
   
       for (const [index, tc] of testcases.entries()) {
-        const payload = {
-          language,
-          code: orderedCode,
-          input: tc.input,
-        };
+        const payload = { language, code: orderedCode, input: tc.input };
         const response = await axios.post(`${COMPILER_API_URL}run`, payload);
         const result = response.data;
   
         if (typeof result === "object" && result.status === "TLE") {
           status = "TLE";
+          console.log(`[handleSubmitSolution] Test case ${index + 1} timed out.`);
           break;
         }
   
@@ -440,33 +438,22 @@ const CodeEditor: React.FC = () => {
   
         if (yourOutput.trim() === tc.output.trim()) {
           passedCount++;
+          console.log(`[handleSubmitSolution] Test case ${index + 1} passed.`);
         } else {
           if (status !== "TLE") status = "Wrong Answer";
+          console.log(`[handleSubmitSolution] Test case ${index + 1} failed.`);
         }
       }
   
       const endTime = performance.now();
       const runTimeMs = Math.round(endTime - startTime);
+      console.log(`[handleSubmitSolution] Test cases done. Passed ${passedCount}/${testcases.length}. Status: ${status}. Runtime: ${runTimeMs}ms`);
   
-      // ✅ Step 1: Save code file and get UUID
-      const submitFileRes = await axios.post(`${SUBMISSION_API_URL}`, {
-        language,
-        code: orderedCode,
-      });
-  
-      const uuid = submitFileRes.data.uuid;
-      if (!uuid) {
-        alert("Failed to save submission file: UUID missing.");
-        setIsSubmitting(false);
-        return;
-      }
-  
-      // ✅ Step 2: Send all required submission fields for DB record
+      // Directly send submission without UUID
       const userId = localStorage.getItem("_id") || "";
       const userName = localStorage.getItem("userName") || ""; // Adjust if using a different key
       const submissionTime = new Date().toISOString();
-      const achievedPoints =
-        status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
+      const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
   
       const submissionPayload = {
         problemId,
@@ -477,27 +464,23 @@ const CodeEditor: React.FC = () => {
         runTime: runTimeMs.toString(),
         userId,
         userName,
-        problemName: name,
-        uuid,
+        problemName: name
       };
   
+      console.log("[handleSubmitSolution] Sending submission payload to backend:", submissionPayload);
       await axios.post(`${SUBMISSION_API_URL}/create`, submissionPayload);
-      // ^ adjust to match your backend (could be just `${SUBMISSION_API_URL}` if POST / handles create)
   
-      alert(
-        `Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`
-      );
+      alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
     } catch (error: any) {
       console.error("Submission error caught:", error);
       alert(
-        `Failed to submit solution: ${
-          error?.response?.data?.message || error.message || error
-        }`
+        `Failed to submit solution: ${error?.response?.data?.message || error.message || error}`
       );
     } finally {
       setIsSubmitting(false);
     }
-  };  
+  };
+   
 
 
   const fetchHint = async () => {

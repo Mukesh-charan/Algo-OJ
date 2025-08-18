@@ -28,8 +28,7 @@ export const createSubmission = async (req, res) => {
           runTime,
           userId,
           userName,
-          problemName,
-          uuid
+          problemName
       });
 
       console.log("🗒️ Prepared Submission object:", newSubmit);
