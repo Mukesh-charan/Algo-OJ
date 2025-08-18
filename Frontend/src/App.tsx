@@ -14,20 +14,22 @@ import AddContest from './Contest/addcontest.tsx';
 import EditContest from './Contest/editContest.tsx';
 import ContestProblemDashboard from './Contest/contestproblem.tsx';
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
-import LeaderboardPage from "../src/Contest/Leaderboard.tsx"
+import LeaderboardPage from "../src/Contest/Leaderboard.tsx";
 import { useEffect } from 'react';
 
 const COMPILER_API_URL = `${import.meta.env.VITE_COMPILER}`;
 
 function pingCompilerApi() {
-  fetch(COMPILER_API_URL, { method: 'GET' })
+  fetch(COMPILER_API_URL, { method: 'GET' });
 }
+
 export default function App() {
   useEffect(() => {
     pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 600000);
+    const interval = setInterval(pingCompilerApi, 600000); // 10 minutes
     return () => clearInterval(interval);
   }, []);
+
   return (
     <Routes>
       {/* Public routes */}
@@ -70,7 +72,7 @@ export default function App() {
       <Route
         path="/userDashboard"
         element={
-          </RoleProtectedRoute>
+          <RoleProtectedRoute role="admin">
             <UserDashboard />
           </RoleProtectedRoute>
         }
@@ -99,18 +101,20 @@ export default function App() {
           </RoleProtectedRoute>
         }
       />
+
       {/* Protected routes - any logged-in user */}
       <Route
         path="/"
+        element={<Dashboard />}
+      />
+      <Route
+        path="/contest/:id/leaderboard"
         element={
-          <Dashboard />
+          <ProtectedRoute>
+            <LeaderboardPage />
+          </ProtectedRoute>
         }
       />
-      <Route path="/contest/:id/leaderboard" element={
-        <ProtectedRoute>
-        <LeaderboardPage />
-        </ProtectedRoute>} />
-
       <Route
         path="/codeEditor/:id"
         element={
@@ -127,7 +131,6 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/contest/:id"
         element={
@@ -136,6 +139,8 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Redirect unmatched routes */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
