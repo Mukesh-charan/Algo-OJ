@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
+  currentSessionToken: { type: String }
+
 });
 
 // Hash password before saving to DB, but ONLY if password is modified and NOT already hashed

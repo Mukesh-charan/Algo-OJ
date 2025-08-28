@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 dotenv.config();
+import crypto from "crypto";
 
 export const createUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -34,6 +35,8 @@ export const createUser = async (req, res) => {
   }
 };
 
+
+
 export const loginUser = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -43,33 +46,42 @@ export const loginUser = async (req, res) => {
     }
 
     const user = await User.findOne({ $or: [{ username }, { email }] });
-
     if (!user) {
       return res.status(400).json({ message: 'User not found' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // Generate new session token & save
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    user.currentSessionToken = sessionToken;
+    await user.save();
+
+    // Create JWT with sessionToken
+    const token = jwt.sign({
+      id: user._id,
+      sessionToken,
+    }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.json({
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
-        type:user.type
+        type: user.type,
       },
       message: 'Login successful',
       token,
     });
+
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
 
 export const getUser = async (req, res) => {
   try {
