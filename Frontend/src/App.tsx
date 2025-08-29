@@ -64,7 +64,6 @@ export default function App() {
   
         if (!response.ok) {
           alert("Multiple login detected. Please login again.");
-          localStorage.clear();
           window.location.href = "/multiple-login";
         }
       } catch {
