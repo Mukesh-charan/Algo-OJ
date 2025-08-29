@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
+// Import your components
 import Login from './Login/Login.tsx';
 import Register from './Login/Register.tsx';
 import ProblemDashboard from './Problem/admin_problemDashboard.tsx';
@@ -13,21 +15,32 @@ import ContestDashboard from './Contest/contestdashboard.tsx';
 import AddContest from './Contest/addcontest.tsx';
 import EditContest from './Contest/editContest.tsx';
 import ContestProblemDashboard from './Contest/contestproblem.tsx';
-import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx";
-import { useEffect } from 'react';
+import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 
+// Backend URL
 const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}/api/health`;
 
 function pingCompilerApi() {
   fetch(BACKEND_API_URL, { method: 'GET' })
+    .then((response) => {
+      if (response.ok) {
+        console.log("Backend is alive!");
+      } else {
+        console.error(`Failed to ping backend: ${response.status}`);
+      }
+    })
+    .catch((error) => {
+      console.error(`Error pinging backend: ${error.message}`);
+    });
 }
 
 export default function App() {
   useEffect(() => {
     pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 600000);
-    return () => clearInterval(interval);
+    const interval = setInterval(pingCompilerApi, 600000); // Ping every 10 minutes
+
+    return () => clearInterval(interval); // Cleanup on unmount
   }, []);
 
   return (
@@ -103,10 +116,7 @@ export default function App() {
       />
 
       {/* Protected routes - any logged-in user */}
-      <Route
-        path="/"
-        element={<Dashboard />}
-      />
+      <Route path="/" element={<Dashboard />} />
       <Route
         path="/contest/:id/leaderboard"
         element={
