@@ -25,7 +25,10 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/contests", contestroutes);
 app.use("/api/submissions", submissionroutes);
 app.use("/api/ai", airoutes);
-app.post("/authenticate",authenticateJWT);
+app.post("/authenticate", authenticateJWT, (req, res) => {
+  res.status(200).json({ message: "Token valid." });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Backend is alive!" });
 });
