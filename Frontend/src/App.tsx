@@ -21,8 +21,6 @@ const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}/api/health`;
 
 function pingCompilerApi() {
   fetch(BACKEND_API_URL, { method: 'GET' })
-  
-  console.log(`pinging ${BACKEND_API_URL}`)
 }
 
 export default function App() {
