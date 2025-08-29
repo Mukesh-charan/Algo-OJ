@@ -17,15 +17,15 @@ import EditContest from './Contest/editContest.tsx';
 import ContestProblemDashboard from './Contest/contestproblem.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx";
 import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
+import MultipleLogin from './Login/MultipleLogin.tsx';
 
-// Backend URL
+
 const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}/api/health`;
 
-function pingCompilerApi() {
+function pingBackendApi() {
   fetch(BACKEND_API_URL, { method: 'GET' })
     .then((response) => {
       if (response.ok) {
-        console.log("Backend is alive!");
       } else {
         console.error(`Failed to ping backend: ${response.status}`);
       }
@@ -37,15 +37,37 @@ function pingCompilerApi() {
 
 export default function App() {
   useEffect(() => {
-    pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 600000); // Ping every 10 minutes
+    pingBackendApi();
+    const interval = setInterval(pingBackendApi, 600000);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const response = await fetch('/api/auth/heartbeat', { 
+          headers: { Authorization: `Bearer ${token}` } 
+        });
+        if (!response.ok) {
+          // session probably invalid, redirect to multiple-login page
+          window.location.href = "/multiple-login";
+        }
+      } catch {
+        window.location.href = "/multiple-login";
+      }
+    }, 1 * 60 * 1000); // every 5 minutes
+  
+    return () => clearInterval(interval);
+  }, []);
+  
 
   return (
     <Routes>
       {/* Public routes */}
+      <Route path="/multiple-login" element={<MultipleLogin />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 

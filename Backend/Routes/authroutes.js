@@ -1,5 +1,5 @@
 import express from 'express';
-import { loginUser, createUser, getUser, deleteUser, updateUser, getUsers, updateUserRole } from '../Controllers/authControllers.mjs';
+import { loginUser, createUser, getUser, deleteUser, updateUser, getUsers, updateUserRole, logoutAllDevices } from '../Controllers/authControllers.mjs';
 
 
 const router = express.Router();
@@ -9,7 +9,7 @@ router.post('/register', createUser);
 router.put('/:id', updateUser);
 
 router.post('/login', loginUser);
-
+router.post('/logoutAll', authenticateJWT, logoutAllDevices);
 router.get('/users', getUsers);
 router.get('/users/:id', getUser);
 router.delete('/users/:id', deleteUser);
