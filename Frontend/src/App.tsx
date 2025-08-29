@@ -17,18 +17,18 @@ import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx";
 import { useEffect } from 'react';
 
-const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
+const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}/api/health`;
 
 function pingCompilerApi() {
   fetch(BACKEND_API_URL, { method: 'GET' })
   
-  console.log(`pining ${BACKEND_API_URL}`)
+  console.log(`pinging ${BACKEND_API_URL}`)
 }
 
 export default function App() {
   useEffect(() => {
     pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 6000);
+    const interval = setInterval(pingCompilerApi, 600000);
     return () => clearInterval(interval);
   }, []);
 
