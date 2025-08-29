@@ -10,7 +10,7 @@ router.post('/register', createUser);
 router.put('/:id', updateUser);
 
 router.post('/login', loginUser);
-router.post('/logoutAll', authenticateJWT, logoutAllDevices);
+router.post('/logoutAll', logoutAllDevices);
 router.get('/users', getUsers);
 router.get('/users/:id', getUser);
 router.delete('/users/:id', deleteUser);
