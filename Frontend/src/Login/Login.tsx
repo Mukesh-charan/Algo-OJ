@@ -37,7 +37,7 @@ const Login: React.FC = () => {
         email: formData.usernameOrEmail, // Send username or email
         password: formData.password,
       });
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("token", response.data.sessionToken);
       localStorage.setItem("userType", response.data.user.type);
       localStorage.setItem("_id", response.data.user.id);
       localStorage.setItem('username', response.data.user.username);

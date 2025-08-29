@@ -413,7 +413,7 @@ const CodeEditor: React.FC = () => {
     try {
       const startTime = performance.now();
   
-      for (const [index, tc] of testcases.entries()) {
+      for (const [_, tc] of testcases.entries()) {
         const payload = { language, code: orderedCode, input: tc.input };
         const response = await axios.post(`${COMPILER_API_URL}run`, payload);
         const result = response.data;

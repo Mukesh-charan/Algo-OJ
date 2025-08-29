@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import styles from "./Login.module.css";
 import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
 import { loadSlim } from "tsparticles-slim";
