@@ -28,7 +28,7 @@ function pingCompilerApi() {
 export default function App() {
   useEffect(() => {
     pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 600000);
+    const interval = setInterval(pingCompilerApi, 6000);
     return () => clearInterval(interval);
   }, []);
 
