@@ -60,12 +60,6 @@ export const loginUser = async (req, res) => {
     user.currentSessionToken = sessionToken;
     await user.save();
 
-    // Create JWT with sessionToken
-    const token = jwt.sign({
-      id: user._id,
-      sessionToken,
-    }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     res.json({
       user: {
         id: user._id,
@@ -74,7 +68,7 @@ export const loginUser = async (req, res) => {
         type: user.type,
       },
       message: 'Login successful',
-      token,
+      sessionToken,
     });
 
   } catch (err) {
@@ -82,19 +76,10 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// In authControllers.mjs
 export const logoutAllDevices = async (req, res) => {
-  const tokenSessionToken = req.user?.sessionToken; // from decoded JWT
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req.body.userId);
   
   if (!user) return res.status(404).json({ message: "User not found" });
-
-  // Compare session tokens
-  if (tokenSessionToken !== user.currentSessionToken) {
-    return res.status(403).json({ message: "You are logged in on another device" });
-  }
-
-  // Tokens match — proceed to logout all by clearing session token
   user.currentSessionToken = null;
   await user.save();
   return res.json({ message: "Logged out from all devices" });

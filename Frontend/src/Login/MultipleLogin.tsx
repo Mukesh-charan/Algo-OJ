@@ -14,17 +14,21 @@ const MultipleLogin: React.FC = () => {
   const handleLogoutAll = async () => {
     try {
       const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("_id")
       if (!token) {
         navigate("/login");
         return;
       }
-      await axios.post(
-        `${import.meta.env.VITE_BACKEND}/api/auth/logoutAll`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await fetch(`${import.meta.env.VITE_BACKEND}/api/auth/logoutAll`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            userId: userId,
+            token: token,
+        }),
+      });
       localStorage.clear();
       navigate("/login");
     } catch (err: any) {

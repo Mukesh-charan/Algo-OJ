@@ -20,10 +20,10 @@ import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
 import MultipleLogin from './Login/MultipleLogin.tsx';
 
 
-const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}/api/health`;
+const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
 
 function pingBackendApi() {
-  fetch(BACKEND_API_URL, { method: 'GET' })
+  fetch(`${BACKEND_API_URL}/api/health`, { method: 'GET' })
     .then((response) => {
       if (response.ok) {
       } else {
@@ -47,11 +47,20 @@ export default function App() {
     const interval = setInterval(async () => {
       try {
         const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("_id")
         if (!token) return;
   
-        const response = await fetch(`${BACKEND_API_URL}/api/auth/heartbeat`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const response = await fetch(`${BACKEND_API_URL}/authenticate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              userId: userId,
+              token: token,
+          }),
         });
+        
   
         if (!response.ok) {
           alert("Multiple login detected. Please login again.");
