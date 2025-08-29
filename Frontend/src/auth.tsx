@@ -34,6 +34,5 @@ export function RoleProtectedRoute({ children, role }: RoleProtectedRouteProps):
   return <>{children}</>;
 }
 export function handleLogout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userType");
+  localStorage.clear();
 };

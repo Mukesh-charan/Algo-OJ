@@ -84,19 +84,21 @@ export const loginUser = async (req, res) => {
 
 // In authControllers.mjs
 export const logoutAllDevices = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+  const tokenSessionToken = req.user?.sessionToken; // from decoded JWT
+  const user = await User.findById(req.user._id);
+  
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.currentSessionToken = null; // or generate a new unique token
-    await user.save();
-
-    res.json({ message: "Logged out from all devices" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+  // Compare session tokens
+  if (tokenSessionToken !== user.currentSessionToken) {
+    return res.status(403).json({ message: "You are logged in on another device" });
   }
-};
 
+  // Tokens match — proceed to logout all by clearing session token
+  user.currentSessionToken = null;
+  await user.save();
+  return res.json({ message: "Logged out from all devices" });
+};
 
 
 export const getUser = async (req, res) => {

@@ -48,20 +48,24 @@ export default function App() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const response = await fetch(`${BACKEND_API_URL}/authenticate`, { 
-          headers: { Authorization: `Bearer ${token}` } 
+  
+        const response = await fetch(`${BACKEND_API_URL}/api/auth/heartbeat`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
+  
         if (!response.ok) {
-          // session probably invalid, redirect to multiple-login page
+          alert("Multiple login detected. Please login again.");
+          localStorage.clear();
           window.location.href = "/multiple-login";
         }
       } catch {
         window.location.href = "/multiple-login";
       }
-    }, 1 * 60 * 1000); // every 5 minutes
+    }, 1 * 60 * 1000); // every minute
   
     return () => clearInterval(interval);
   }, []);
+  
   
 
   return (
