@@ -48,7 +48,7 @@ export default function App() {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const response = await fetch('/api/auth/heartbeat', { 
+        const response = await fetch(`${BACKEND_API_URL}/authenticate`, { 
           headers: { Authorization: `Bearer ${token}` } 
         });
         if (!response.ok) {

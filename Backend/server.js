@@ -7,6 +7,7 @@ import problemRoutes from "./Routes/problemroutes.js";
 import contestroutes from "./Routes/contestroutes.js";
 import submissionroutes from "./Routes/submissionroutes.js";
 import airoutes from "./Routes/ai.js";
+import { authenticateJWT } from "./Middleware/authMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/contests", contestroutes);
 app.use("/api/submissions", submissionroutes);
 app.use("/api/ai", airoutes);
+app.use("/authenticate",authenticateJWT);
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Backend is alive!" });
 });
