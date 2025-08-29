@@ -25,7 +25,7 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/contests", contestroutes);
 app.use("/api/submissions", submissionroutes);
 app.use("/api/ai", airoutes);
-app.use("/authenticate",authenticateJWT);
+app.post("/authenticate",authenticateJWT);
 app.get("/api/health", (req, res) => {
   res.status(200).json({ message: "Backend is alive!" });
 });
