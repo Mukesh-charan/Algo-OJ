@@ -14,10 +14,6 @@ const MultipleLogin: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("_id")
-      if (!token) {
-        navigate("/login");
-        return;
-      }
       await fetch(`${import.meta.env.VITE_BACKEND}/api/auth/logoutAll`, {
         method: 'POST',
         headers: {
