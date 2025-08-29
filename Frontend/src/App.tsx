@@ -21,12 +21,14 @@ const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
 
 function pingCompilerApi() {
   fetch(BACKEND_API_URL, { method: 'GET' })
+  
+  console.log(`pining ${BACKEND_API_URL}`)
 }
 
 export default function App() {
   useEffect(() => {
     pingCompilerApi();
-    const interval = setInterval(pingCompilerApi, 600000); // 10 minutes
+    const interval = setInterval(pingCompilerApi, 600000);
     return () => clearInterval(interval);
   }, []);
 
