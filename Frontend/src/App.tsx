@@ -22,26 +22,7 @@ import MultipleLogin from './Login/MultipleLogin.tsx';
 
 const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
 
-function pingBackendApi() {
-  fetch(`${BACKEND_API_URL}/api/health`, { method: 'GET' })
-    .then((response) => {
-      if (response.ok) {
-      } else {
-        console.error(`Failed to ping backend: ${response.status}`);
-      }
-    })
-    .catch((error) => {
-      console.error(`Error pinging backend: ${error.message}`);
-    });
-}
-
 export default function App() {
-  useEffect(() => {
-    pingBackendApi();
-    const interval = setInterval(pingBackendApi, 600000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const interval = setInterval(async () => {
