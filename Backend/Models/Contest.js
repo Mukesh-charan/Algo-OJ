@@ -43,5 +43,4 @@ ContestSchema.methods.comparePassword = async function (enteredPassword) {
 };
 
 const Contest = mongoose.model('Contest', ContestSchema);
-
 export default Contest;
