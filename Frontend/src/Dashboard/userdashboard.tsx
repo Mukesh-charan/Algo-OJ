@@ -236,6 +236,7 @@ const Dashboard: React.FC = () => {
           <div>No contests available currently.</div>
         ) : (
           <>
+            <div style={{ marginBottom: "25px", width: "100%", marginLeft: "150px" }}>
             <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
               <div style={{ flex: 3 }}>Contest Name</div>
               <div style={{ flex: 1 }}>Start Date</div>
@@ -245,7 +246,6 @@ const Dashboard: React.FC = () => {
               <div style={{ flex: 1 }}>Coding Style</div>
               <div style={{ flex: 2 }}>Action</div>
             </div>
-            <div>
               {activeContests.map(contest => {
                 const registered = isUserRegistered(contest);
                 const started = hasContestStarted(contest);
@@ -282,14 +282,14 @@ const Dashboard: React.FC = () => {
 
                 return (
                   <div key={contest._id} style={{ display: "flex", alignItems: "center", marginBottom: 8, width: "100%" }}>
-                    <div style={{ flex: 3, fontWeight: "bold" }}>{contest.name}</div>
-                    <div style={{ flex: 1 }}>{contest.startDate}</div>
-                    <div style={{ flex: 1 }}>{contest.startTime}</div>
-                    <div style={{ flex: 1 }}>{contest.endDate}</div>
-                    <div style={{ flex: 1 }}>{contest.endTime}</div>
-                    <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
-                    <div style={{ flex: 2 }}>{actionButton}</div>
-                  </div>
+                  <div style={{ flex: 3, fontWeight: "bold" }}>{contest.name}</div>
+                  <div style={{ flex: 1 }}>{contest.startDate}</div>
+                  <div style={{ flex: 1 }}>{contest.startTime}</div>
+                  <div style={{ flex: 1 }}>{contest.endDate}</div>
+                  <div style={{ flex: 1 }}>{contest.endTime}</div>
+                  <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
+                  <div style={{ flex: 2 }}>{actionButton}</div>
+                </div>
                 );
               })}
             </div>
@@ -297,7 +297,7 @@ const Dashboard: React.FC = () => {
         )}
 
         <h2>Search Problems</h2>
-        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -322,12 +322,12 @@ const Dashboard: React.FC = () => {
           <div>No problems found.</div>
         ) : (
           <>
-            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 8, width: "100%" }}>
-              <div style={{ flex: 5 }}>Problem</div>
+            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
+              <div style={{ flex: 4 }}>Problem</div>
               <div style={{ flex: 2 }}>Difficulty</div>
-              <div style={{ flex: 2 }}>Actions</div>
+              <div style={{ flex: 1 }}>Actions</div>
             </div>
-            <div>
+            <div className="problem-list">
               {filteredProblems
                 .filter(problem => problem.visibility)
                 .map(problem => (
