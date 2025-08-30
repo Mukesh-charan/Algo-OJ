@@ -166,7 +166,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Handle password verify submit
   const handlePasswordSubmit = async (password: string) => {
     if (!contestToStart) return;
     try {
@@ -178,10 +177,21 @@ const Dashboard: React.FC = () => {
       } else {
         setPasswordError("Incorrect password");
       }
-    } catch (error) {
-      setPasswordError("Error verifying password");
+    } catch (error: any) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          setPasswordError("Incorrect password");
+        } else if (error.response.data && error.response.data.message) {
+          setPasswordError(error.response.data.message);
+        } else {
+          setPasswordError("Error verifying password");
+        }
+      } else {
+        setPasswordError("Network error or server unreachable");
+      }
     }
   };
+  
 
   // Filter problems as before
   const filteredProblems = problems.filter(
