@@ -37,20 +37,21 @@ interface Contest {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+
   const [problems, setProblems] = useState<Problem[]>([]);
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [contests, setContests] = useState<Contest[]>([]);
-  const [loadingContests, setLoadingContests] = useState<boolean>(true);
+  const [loadingContests, setLoadingContests] = useState(true);
   const [processingContestId, setProcessingContestId] = useState<string | null>(null);
+
+  // Password prompt states
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [passwordInput, setPasswordInput] = useState("");
   const [contestToStart, setContestToStart] = useState<Contest | null>(null);
   const [passwordError, setPasswordError] = useState("");
 
-
-
-  const userId = localStorage.getItem("_id") || ""; // adjust storage key as per your app
+  const userId = localStorage.getItem("_id") || "";
   const username = localStorage.getItem("username") || "";
 
   useEffect(() => {
@@ -81,10 +82,9 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Parse contest date/time to JS Date object
-  const parseContestDateTime = (dateStr: string, timeStr: string) => new Date(`${dateStr}T${timeStr}`);
+  const parseContestDateTime = (dateStr: string, timeStr: string) =>
+    new Date(`${dateStr}T${timeStr}`);
 
-  // Filter out contests which have ended
   const activeContests = contests.filter(contest => {
     const now = new Date();
     const endDateTime = parseContestDateTime(contest.endDate, contest.endTime);
@@ -93,11 +93,8 @@ const Dashboard: React.FC = () => {
 
   const isUserRegistered = (contest: Contest) => {
     if (!contest.users || contest.users.length === 0) return false;
-    return contest.users.some(user => {
-      return user.id === userId;
-    });
+    return contest.users.some(user => user.id === userId);
   };
-
 
   const hasContestStarted = (contest: Contest) => {
     const now = new Date();
@@ -111,9 +108,7 @@ const Dashboard: React.FC = () => {
       navigate("/login");
       return;
     }
-
     try {
-      console.log(userId, username);
       setProcessingContestId(contestId);
       await axios.post(`${API_URL}/contests/${contestId}/register`, { userId, username });
       alert("Successfully registered for contest!");
@@ -132,7 +127,6 @@ const Dashboard: React.FC = () => {
       navigate("/login");
       return;
     }
-
     try {
       setProcessingContestId(contestId);
       await axios.post(`${API_URL}/contests/${contestId}/removeUser`, { userId });
@@ -146,7 +140,12 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // You can adjust this to navigate or launch contest start
+  // Handles final navigation once authorized
+  const handleStartContest = (contestId: string) => {
+    navigate(`/contest/${contestId}`);
+  };
+
+  // Handle start clicked: show password prompt if protected
   const onStartClick = (contest: Contest) => {
     if (contest.isPasswordProtected) {
       setContestToStart(contest);
@@ -158,10 +157,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleStartContest = (contestId: string) => {
-    navigate(`/contest/${contestId}`);
-  };
-
   const handleSolve = async (id: string) => {
     try {
       await axios.get(`${API_URL}/problems/${id}`);
@@ -171,6 +166,24 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Handle password verify submit
+  const handlePasswordSubmit = async (password: string) => {
+    if (!contestToStart) return;
+    try {
+      setPasswordError("");
+      const res = await axios.post(`${API_URL}/contests/${contestToStart._id}/verify-password`, { password });
+      if (res.data.valid) {
+        setShowPasswordPrompt(false);
+        handleStartContest(contestToStart._id);
+      } else {
+        setPasswordError("Incorrect password");
+      }
+    } catch (error) {
+      setPasswordError("Error verifying password");
+    }
+  };
+
+  // Filter problems as before
   const filteredProblems = problems.filter(
     problem =>
       problem.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -205,29 +218,24 @@ const Dashboard: React.FC = () => {
   return (
     <div>
       <Particles id="welcome-particles" init={particlesInit} options={particlesOptions} className="particles-container" />
-
       <header className="header">
         <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
-        {!localStorage.getItem("token") ? (
-          <button onClick={() => navigate("/login")} style={{ marginRight: "30px" }}>Login</button>
-        ) : (
-          <button onClick={() => { handleLogout(); navigate("/login"); }} style={{ marginRight: "30px" }}>Logout</button>
-        )}
+        <button onClick={() => { handleLogout(); navigate("/login"); }} style={{ marginRight: "30px" }}>
+          Logout
+        </button>
       </header>
-
       <div className="container">
-
         {localStorage.getItem("userType") === "admin" && (
           <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Dashboard</button>
         )}
 
         <h2>Available Contests</h2>
         {loadingContests ? (
-          <p>Loading contests...</p>
+          <div>Loading contests...</div>
         ) : activeContests.length === 0 ? (
-          <p>No contests available currently.</p>
+          <div>No contests available currently.</div>
         ) : (
-          <div style={{ marginBottom: "25px", width: "100%", marginLeft: "150px" }}>
+          <>
             <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
               <div style={{ flex: 3 }}>Contest Name</div>
               <div style={{ flex: 1 }}>Start Date</div>
@@ -237,60 +245,62 @@ const Dashboard: React.FC = () => {
               <div style={{ flex: 1 }}>Coding Style</div>
               <div style={{ flex: 2 }}>Action</div>
             </div>
+            <div>
+              {activeContests.map(contest => {
+                const registered = isUserRegistered(contest);
+                const started = hasContestStarted(contest);
 
-            {activeContests.map(contest => {
-              const registered = isUserRegistered(contest);
-              const started = hasContestStarted(contest);
+                let actionButton;
+                if (started && registered) {
+                  actionButton = (
+                    <button
+                      className="button-action"
+                      onClick={() => onStartClick(contest)}
+                    >
+                      Start
+                    </button>
+                  );
+                } else {
+                  actionButton = registered ? (
+                    <button
+                      className="button-action"
+                      onClick={() => handleUnregister(contest._id)}
+                      disabled={processingContestId === contest._id}
+                    >
+                      {processingContestId === contest._id ? "Processing..." : "Un-register"}
+                    </button>
+                  ) : (
+                    <button
+                      className="button-action"
+                      onClick={() => handleRegister(contest._id)}
+                      disabled={processingContestId === contest._id}
+                    >
+                      {processingContestId === contest._id ? "Processing..." : "Register"}
+                    </button>
+                  );
+                }
 
-              let actionButton;
-              if (started && registered) {
-                // Show Start button during contest running (between start and end)
-                actionButton = (
-                  <button
-                    className="button-action"
-                    onClick={() => onStartClick(contest)}
+                return (
+                  <div
+                    key={contest._id}
+                    style={{ display: "flex", marginBottom: 12, width: "100%", fontWeight: "normal", alignItems: "center" }}
                   >
-                    Start
-                  </button>
+                    <div style={{ flex: 3 }}>{contest.name}</div>
+                    <div style={{ flex: 1 }}>{contest.startDate}</div>
+                    <div style={{ flex: 1 }}>{contest.startTime}</div>
+                    <div style={{ flex: 1 }}>{contest.endDate}</div>
+                    <div style={{ flex: 1 }}>{contest.endTime}</div>
+                    <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
+                    <div style={{ flex: 2 }}>{actionButton}</div>
+                  </div>
                 );
-              } else {
-                // Before start, show Register or Un-register button
-                actionButton = registered ? (
-                  <button
-                    className="button-action"
-                    onClick={() => handleUnregister(contest._id)}
-                    disabled={processingContestId === contest._id}
-                  >
-                    {processingContestId === contest._id ? "Processing..." : "Un-register"}
-                  </button>
-                ) : (
-                  <button
-                    className="button-action"
-                    onClick={() => handleRegister(contest._id)}
-                    disabled={processingContestId === contest._id}
-                  >
-                    {processingContestId === contest._id ? "Processing..." : "Register"}
-                  </button>
-                );
-              }
-
-              return (
-                <div key={contest._id} style={{ display: "flex", alignItems: "center", marginBottom: 8, width: "100%" }}>
-                  <div style={{ flex: 3, fontWeight: "bold" }}>{contest.name}</div>
-                  <div style={{ flex: 1 }}>{contest.startDate}</div>
-                  <div style={{ flex: 1 }}>{contest.startTime}</div>
-                  <div style={{ flex: 1 }}>{contest.endDate}</div>
-                  <div style={{ flex: 1 }}>{contest.endTime}</div>
-                  <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
-                  <div style={{ flex: 2 }}>{actionButton}</div>
-                </div>
-              );
-            })}
-          </div>
+              })}
+            </div>
+          </>
         )}
 
-        {/* Search and filter */}
-        <div style={{ display: "flex", gap: "10px", width: "100%", marginTop: "20px" }}>
+        <h2>Search Problems</h2>
+        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -311,32 +321,88 @@ const Dashboard: React.FC = () => {
           </select>
         </div>
 
-        {/* Problems List */}
         {filteredProblems.length === 0 ? (
           <div>No problems found.</div>
         ) : (
           <>
-            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
-              <div style={{ flex: 4 }}>Problem</div>
+            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 8, width: "100%" }}>
+              <div style={{ flex: 5 }}>Problem</div>
               <div style={{ flex: 2 }}>Difficulty</div>
-              <div style={{ flex: 1 }}>Actions</div>
+              <div style={{ flex: 2 }}>Actions</div>
             </div>
-            <div className="problem-list">
+            <div>
               {filteredProblems
                 .filter(problem => problem.visibility)
                 .map(problem => (
-                  <div key={problem._id} className="problem-item" style={{ alignItems: "center" }}>
-                    <div style={{ flex: 4 }}>{problem.name}</div>
-                    <div style={{ flex: 2 }}>{problem.difficulty}</div>
-                    <div className="problem-actions" style={{ flex: 1 }}>
-                      <button className="button-action" onClick={() => handleSolve(problem._id)}>
-                        Solve
-                      </button>
+                  <div
+                    key={problem._id}
+                    style={{ display: "flex", marginBottom: 8, width: "100%", fontWeight: "normal", alignItems: "center" }}
+                  >
+                    <div style={{ flex: 5 }}>{problem.name}</div>
+                    <div style={{ flex: 2, textTransform: "capitalize" }}>{problem.difficulty}</div>
+                    <div style={{ flex: 2 }}>
+                      <button className="button-action" onClick={() => handleSolve(problem._id)}>Solve</button>
                     </div>
                   </div>
                 ))}
             </div>
           </>
+        )}
+
+        {showPasswordPrompt && contestToStart && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1000,
+            }}
+          >
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                handlePasswordSubmit(passwordInput);
+              }}
+              style={{
+                backgroundColor: "white",
+                padding: 24,
+                borderRadius: 8,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                width: 320,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h3 style={{ margin: 0, marginBottom: 8 }}>
+                Enter password for "{contestToStart.name}"
+              </h3>
+              <input
+                type="password"
+                value={passwordInput}
+                placeholder="Password"
+                onChange={e => setPasswordInput(e.target.value)}
+                style={{
+                  padding: 8, fontSize: 16, borderRadius: 4, border: "1px solid #ccc",
+                }}
+                autoFocus
+              />
+              {passwordError && (
+                <div style={{ color: "red", fontSize: 14 }}>{passwordError}</div>
+              )}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                <button type="button" onClick={() => setShowPasswordPrompt(false)} style={{ padding: "8px 12px" }}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={passwordInput.length === 0} style={{ padding: "8px 12px" }}>
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
         )}
       </div>
     </div>
