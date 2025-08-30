@@ -57,9 +57,6 @@ export const createSubmission = async (req, res) => {
       const normExpected = (tc.output || "").trim();
       const normActual = (yourOutput || "").trim();
 
-      console.log("Expected Output:", JSON.stringify(normExpected));
-      console.log("Your Output:", JSON.stringify(normActual));
-
       if (normActual === normExpected) {
         passedCount++;
       } else if (status !== "TLE") {

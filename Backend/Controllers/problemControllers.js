@@ -2,7 +2,8 @@ import Problem from '../Models/Problem.js';
 
 export const getProblems = async (req, res) => {
   try {
-    const problems = await Problem.find();
+    // Query all problems excluding 'testcases' field
+    const problems = await Problem.find().select("-testcases");
     res.json(problems);
   } catch (err) {
     res.status(500).json({ message: err.message });
