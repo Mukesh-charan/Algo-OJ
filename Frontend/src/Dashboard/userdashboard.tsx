@@ -281,11 +281,8 @@ const Dashboard: React.FC = () => {
                 }
 
                 return (
-                  <div
-                    key={contest._id}
-                    style={{ display: "flex", marginBottom: 12, width: "100%", fontWeight: "normal", alignItems: "center" }}
-                  >
-                    <div style={{ flex: 3 }}>{contest.name}</div>
+                  <div key={contest._id} style={{ display: "flex", alignItems: "center", marginBottom: 8, width: "100%" }}>
+                    <div style={{ flex: 3, fontWeight: "bold" }}>{contest.name}</div>
                     <div style={{ flex: 1 }}>{contest.startDate}</div>
                     <div style={{ flex: 1 }}>{contest.startTime}</div>
                     <div style={{ flex: 1 }}>{contest.endDate}</div>
@@ -334,14 +331,13 @@ const Dashboard: React.FC = () => {
               {filteredProblems
                 .filter(problem => problem.visibility)
                 .map(problem => (
-                  <div
-                    key={problem._id}
-                    style={{ display: "flex", marginBottom: 8, width: "100%", fontWeight: "normal", alignItems: "center" }}
-                  >
-                    <div style={{ flex: 5 }}>{problem.name}</div>
-                    <div style={{ flex: 2, textTransform: "capitalize" }}>{problem.difficulty}</div>
-                    <div style={{ flex: 2 }}>
-                      <button className="button-action" onClick={() => handleSolve(problem._id)}>Solve</button>
+                  <div key={problem._id} className="problem-item" style={{ alignItems: "center" }}>
+                    <div style={{ flex: 4 }}>{problem.name}</div>
+                    <div style={{ flex: 2 }}>{problem.difficulty}</div>
+                    <div className="problem-actions" style={{ flex: 1 }}>
+                      <button className="button-action" onClick={() => handleSolve(problem._id)}>
+                        Solve
+                      </button>
                     </div>
                   </div>
                 ))}
