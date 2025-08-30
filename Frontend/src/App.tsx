@@ -23,40 +23,6 @@ import MultipleLogin from './Login/MultipleLogin.tsx';
 const BACKEND_API_URL = `${import.meta.env.VITE_BACKEND}`;
 
 export default function App() {
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("_id")
-        if (!token) return;
-  
-        const response = await fetch(`${BACKEND_API_URL}/authenticate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              userId: userId,
-              token: token,
-          }),
-        });
-        
-  
-        if (!response.ok) {
-          alert("Multiple login detected. Please login again.");
-          window.location.href = "/multiple-login";
-        }
-      } catch {
-        window.location.href = "/multiple-login";
-      }
-    }, 1 * 60 * 1000); // every minute
-  
-    return () => clearInterval(interval);
-  }, []);
-  
-  
-
   return (
     <Routes>
       {/* Public routes */}
