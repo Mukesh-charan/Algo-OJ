@@ -1,6 +1,8 @@
 import Submission from "../Models/Submission.js";
 import Problem from "../Models/Problem.js";
 import axios from "axios";
+import dotenv from 'dotenv';
+dotenv.config();
 const COMPILER_API_URL = process.env.COMPILER_API_URL
 
 export const createSubmission = async (req, res) => {
