@@ -192,3 +192,34 @@ export const deleteContest = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const verifyContestPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    const contest = await Contest.findById(id);
+    if (!contest) {
+      return res.status(404).json({ valid: false, message: 'Contest not found' });
+    }
+
+    if (!contest.isPasswordProtected) {
+      return res.json({ valid: true });
+    }
+
+    if (!password) {
+      return res.status(400).json({ valid: false, message: 'Password is required' });
+    }
+
+    const isValid = await contest.comparePassword(password);
+
+    if (!isValid) {
+      return res.status(401).json({ valid: false, message: 'Incorrect password' });
+    }
+
+    return res.json({ valid: true });
+  } catch (error) {
+    console.error('Error verifying contest password:', error);
+    return res.status(500).json({ valid: false, message: 'Server error' });
+  }
+};
