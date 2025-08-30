@@ -394,76 +394,33 @@ const CodeEditor: React.FC = () => {
   };
   
   const handleSubmitSolution = async () => {
-    if (disableActions) return; // Prevent action if contest ended or disabled
+    if (disableActions) return; // Disable if contest ended or not allowed
     if (!code.trim()) {
       alert("No code to submit!");
-      return;
-    }
-    if (!testcases || testcases.length === 0) {
-      alert("No testcases found for this problem!");
       return;
     }
   
     setIsSubmitting(true);
   
-    let status = "Accepted";
-    let passedCount = 0;
-    const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
-  
     try {
-      const startTime = performance.now();
-  
-      for (const [_, tc] of testcases.entries()) {
-        const payload = { language, code: orderedCode, input: tc.input };
-        const response = await axios.post(`${COMPILER_API_URL}run`, payload);
-        const result = response.data;
-  
-        if (typeof result === "object" && result.status === "TLE") {
-          status = "TLE";
-          break;
-        }
-  
-        let yourOutput = "";
-        if (typeof result.output === "string") {
-          yourOutput = result.output;
-        } else if (typeof result === "string") {
-          yourOutput = result;
-        } else if (result.stdout) {
-          yourOutput = result.stdout;
-        } else {
-          yourOutput = JSON.stringify(result);
-        }
-  
-        if (yourOutput.trim() === tc.output.trim()) {
-          passedCount++;
-        } else {
-          if (status !== "TLE") status = "Wrong Answer";
-        }
-      }
-  
-      const endTime = performance.now();
-      const runTimeMs = Math.round(endTime - startTime);
-      
-      const userId = localStorage._id || "";
-      const userName = localStorage.username || ""; // Adjust if using a different key
-      const submissionTime = new Date().toISOString();
-      const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
-  
-      const submissionPayload = {
+      const payload = {
         problemId,
         contestId: contestId || null,
-        points: achievedPoints,
-        status,
-        submissionTime,
-        runTime: runTimeMs.toString(),
-        userId,
-        userName,
-        problemName: name
+        language,
+        code: isRandomOrder ? reorderToOriginal(code, randomOrder) : code,
+        userId: localStorage._id || "",
+        userName: localStorage.username || "",
+        problemName: name,
+        uuid: "", 
       };
   
-      await axios.post(`${SUBMISSION_API_URL}/`, submissionPayload);
+      const response = await axios.post(`${SUBMISSION_API_URL}/`, payload);
   
-      alert(`Solution Submitted!\nVerdict: ${status}\nPassed: ${passedCount}/${testcases.length}\nScore: ${achievedPoints}/${points}`);
+      const { verdict, passedCount, totalTests, achievedPoints } = response.data;
+  
+      alert(
+        `Solution Submitted!\nVerdict: ${verdict}\nPassed: ${passedCount}/${totalTests}\nScore: ${achievedPoints}/${points}`
+      );
     } catch (error: any) {
       console.error("Submission error caught:", error);
       alert(
@@ -473,7 +430,6 @@ const CodeEditor: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-   
 
 
   const fetchHint = async () => {

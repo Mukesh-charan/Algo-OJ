@@ -1,53 +1,103 @@
 import Submission from "../Models/Submission.js";
+import Problem from "../Models/Problem.js";
+import axios from "axios";
+const COMPILER_API_URL = process.env.COMPILER_API_URL
 
 export const createSubmission = async (req, res) => {
   const {
+    problemId,
+    contestId,
+    language,
+    code,
+    userId,
+    userName,
+    problemName,
+    uuid,
+  } = req.body;
+
+  if (!problemId || !language || !code) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    // Fetch problem and testcases
+    const problem = await Problem.findById(problemId);
+    if (!problem) {
+      return res.status(404).json({ message: "Problem not found" });
+    }
+
+    const testcases = problem.testcases || [];
+    if (testcases.length === 0) {
+      return res.status(400).json({ message: "No testcases found for this problem" });
+    }
+
+    let status = "Accepted";
+    let passedCount = 0;
+    const points = problem.points || 0;
+
+    const startTime = Date.now();
+
+    for (const tc of testcases) {
+      const payload = { language, code, input: tc.input };
+      const response = await axios.post(`${COMPILER_API_URL}run`, payload);
+      const result = response.data;
+
+      if (result.status === "TLE") {
+        status = "TLE";
+        break;
+      }
+
+      let yourOutput = "";
+      if (typeof result.output === "string") {
+        yourOutput = result.output;
+      } else if (result.stdout) {
+        yourOutput = result.stdout;
+      } else {
+        yourOutput = JSON.stringify(result);
+      }
+
+      if (yourOutput.trim() === tc.output.trim()) {
+        passedCount++;
+      } else if (status !== "TLE") {
+        status = "Wrong Answer";
+      }
+    }
+
+    const runTimeMs = Date.now() - startTime;
+    const achievedPoints = status === "TLE" ? 0 : Math.round((passedCount / testcases.length) * points);
+
+    const newSubmit = new Submission({
       problemId,
       contestId,
-      points,
+      points: achievedPoints,
       status,
-      submissionTime,
-      runTime,
+      submissionTime: new Date(),
+      runTime: runTimeMs.toString(),
       userId,
       userName,
       problemName,
-      uuid
-  } = req.body;
+      uuid,
+    });
 
-  try {
+    await newSubmit.save();
 
-      const newSubmit = new Submission({
-          problemId,
-          contestId,
-          points,
-          status,
-          submissionTime,
-          runTime,
-          userId,
-          userName,
-          problemName
-      });
-
-      await newSubmit.save();
-      res.status(201).json(newSubmit);
+    return res.status(201).json({
+      submission: newSubmit,
+      verdict: status,
+      passedCount,
+      totalTests: testcases.length,
+      achievedPoints,
+    });
   } catch (err) {
-      console.error("❌ Error while creating submission:");
-      console.error("Message:", err.message);
-      console.error("Full error object:", err);
-
-      if (err.errors) {
-          // Mongoose validation errors
-          Object.keys(err.errors).forEach(field => {
-              console.error(`Validation error on "${field}":`, err.errors[field].message);
-          });
-      }
-
-      res.status(400).json({
-          message: err.message,
-          errors: err.errors || null
+    console.error("❌ Error while creating submission:", err);
+    if (err.errors) {
+      Object.keys(err.errors).forEach(field => {
+        console.error(`Validation error on "${field}":`, err.errors[field].message);
       });
+    }
+    return res.status(400).json({ message: err.message, errors: err.errors || null });
   }
-}
+};
 
 
 
