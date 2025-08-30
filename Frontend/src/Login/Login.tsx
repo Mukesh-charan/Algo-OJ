@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate hook
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "./Login.module.css";
 import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
@@ -12,13 +12,12 @@ const Login: React.FC = () => {
 
 
   const [formData, setFormData] = useState({
-    usernameOrEmail: "", // This field will accept either username or email
+    usernameOrEmail: "", 
     password: "",
   });
   const [error, setError] = useState<string>("");
-  const navigate = useNavigate(); // Navigate hook for redirection
+  const navigate = useNavigate(); 
 
-  // Handle change in input fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -27,24 +26,18 @@ const Login: React.FC = () => {
     }));
   };
 
-  // Handle form submission (Login)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Sending login request to the server
       const response = await axios.post(`${import.meta.env.VITE_BACKEND}/api/auth/login`, {
-        username: formData.usernameOrEmail, // Send username or email
-        email: formData.usernameOrEmail, // Send username or email
+        username: formData.usernameOrEmail,
+        email: formData.usernameOrEmail,
         password: formData.password,
       });
       localStorage.setItem("token", response.data.sessionToken);
       localStorage.setItem("userType", response.data.user.type);
       localStorage.setItem("_id", response.data.user.id);
       localStorage.setItem('username', response.data.user.username);
-
-      // Store the token (in localStorage or other methods)
-      //localStorage.setItem("token", response.data.token);
-
       const user = response.data.user;
       if (user.type === "admin") {
         navigate("/adminDashboard");
@@ -54,7 +47,6 @@ const Login: React.FC = () => {
 
 
     } catch (error: any) {
-      // Show error message if login fails
       setError(error.response?.data?.message || "Something went wrong");
     }
   };

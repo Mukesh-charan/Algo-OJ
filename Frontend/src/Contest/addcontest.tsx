@@ -9,7 +9,7 @@ import Particles from "react-tsparticles";
 const API_URL = `${import.meta.env.VITE_BACKEND}/api`;
 
 interface Problem {
-  _id?: string; // existing problems have _id
+  _id?: string;
   name: string;
   difficulty: string;
   points: number;
@@ -25,14 +25,18 @@ const AddContest: React.FC = () => {
   const [selectedProblems, setSelectedProblems] = useState<Problem[]>([]);
   const [existingProblems, setExistingProblems] = useState<Problem[]>([]);
 
-  // Separate states for date and time inputs
+  // Date & time fields
   const [contestStartDate, setContestStartDate] = useState("");
   const [contestStartTime, setContestStartTime] = useState("");
   const [contestEndDate, setContestEndDate] = useState("");
   const [contestEndTime, setContestEndTime] = useState("");
   const [type, setType] = useState<boolean>(true);
 
-  // Fetch existing problems for selection
+  // Password protection
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   useEffect(() => {
     const fetchProblems = async () => {
       try {
@@ -71,9 +75,18 @@ const AddContest: React.FC = () => {
       alert("Start and End date/time must be set");
       return;
     }
+    if (isPasswordProtected) {
+      if (!password) {
+        alert("Password required.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+    }
 
     try {
-      // Combine date and time strings
       const startDateTime = new Date(`${contestStartDate}T${contestStartTime}`);
       const endDateTime = new Date(`${contestEndDate}T${contestEndTime}`);
 
@@ -86,12 +99,10 @@ const AddContest: React.FC = () => {
         return;
       }
 
-      // 1. Post new problems first (those without _id)
+      // Post new problems
       const postedProblems = await Promise.all(
         selectedProblems.map(async prob => {
-          if (prob._id) return prob; // existing problems already saved
-
-          // post new problem
+          if (prob._id) return prob;
           const response = await axios.post(`${API_URL}/problems`, {
             name: prob.name,
             difficulty: prob.difficulty,
@@ -104,18 +115,19 @@ const AddContest: React.FC = () => {
         })
       );
 
-      // 2. Prepare contest object to send, with separate date/time fields
+      // Contest payload
       const contestPayload = {
         name: contestName.trim(),
-        startDate: contestStartDate.toString(), // string YYYY-MM-DD
-        startTime: contestStartTime + ":00", // add seconds, e.g. "14:30:00"
+        startDate: contestStartDate.toString(),
+        startTime: contestStartTime + ":00",
         endDate: contestEndDate.toString(),
         endTime: contestEndTime + ":00",
         problems: postedProblems.map(p => ({ id: p._id })),
         type: type,
+        isPasswordProtected,
+        password: isPasswordProtected ? password : undefined,
       };
 
-      console.log(contestPayload);
       await axios.post(`${API_URL}/contests`, contestPayload);
 
       alert("Contest and problems added successfully!");
@@ -222,15 +234,48 @@ const AddContest: React.FC = () => {
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
         <label htmlFor="type">Code Editor Type:</label>
+        <select
+          id="type"
+          className="input-full"
+          value={type ? "true" : "false"}
+          onChange={e => setType(e.target.value === "true")}
+        >
+          <option value="true">Random</option>
+          <option value="false">Normal</option>
+        </select>
+
+        {/* Password protection section */}
+        <div style={{ margin: "20px 0" }}>
+          <label>Password Protected?</label>
           <select
-            id="type"
-            className="input-full"
-            value={type ? "true" : "false"}
-            onChange={e => setType(e.target.value === "true")}
+            value={isPasswordProtected ? "yes" : "no"}
+            onChange={e => setIsPasswordProtected(e.target.value === "yes")}
+            style={{ marginBottom: 10, marginLeft: 10, padding: 8 }}
           >
-            <option value="true">Random</option>
-            <option value="false">Normal</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
           </select>
+        </div>
+        {isPasswordProtected && (
+          <div>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={{ marginBottom: 10, padding: 8, width: "100%" }}
+              required
+            />
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              style={{ marginBottom: 20, padding: 8, width: "100%" }}
+              required
+            />
+          </div>
+        )}
 
         <button className="add-problem-btn" onClick={() => navigate("/addProblem")} style={{ marginBottom: 20 }}>
           Add New Problem
@@ -270,13 +315,13 @@ const AddContest: React.FC = () => {
           Create Contest
         </button>
         <button
-              type="button"
-              className="button-action"
-              style={{ backgroundColor: "#eee", color: "#1245a4" , marginTop:"10px"}}
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </button>
+          type="button"
+          className="button-action"
+          style={{ backgroundColor: "#eee", color: "#1245a4", marginTop: "10px" }}
+          onClick={() => navigate(-1)}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

@@ -18,75 +18,60 @@ interface Problem {
   sampleOutput: string[];
 }
 
-interface ContestProblem {
-  id: string;
-}
-interface ContestUser {
-  id: string; // user id
-  username: string;
-}
-interface Contest {
-  _id: string;
-  name: string;
-  problems: ContestProblem[];
-  startDate: string; // e.g. "2025-07-30"
-  startTime: string; // e.g. "10:00:00"
-  endDate: string;
-  endTime: string;
-  users: ContestUser[];
-  type: string; // array of users registered for the contest
-}
-
-
 const EditContest: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
-  const [contestName, setContestName] = useState<string>("");
+  // Regular states
+  const [contestName, setContestName] = useState("");
   const [selectedProblems, setSelectedProblems] = useState<Problem[]>([]);
   const [existingProblems, setExistingProblems] = useState<Problem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
-  const [contestStartDate, setContestStartDate] = useState<string>("");
-  const [contestEndDate, setContestEndDate] = useState<string>("");
-  const [contestStartTime, setContestStartTime] = useState<string>("");
-  const [contestEndTime, setContestEndTime] = useState<string>("");
-  const [type, setType] = useState<string>("true");
-  console.log(type);
-  // Helper: extract date part as "YYYY-MM-DD"
-  const toDateString = (isoDateString: string | null | undefined): string =>
-    isoDateString ? new Date(isoDateString).toISOString().slice(0, 10) : "";
+  const [contestStartDate, setContestStartDate] = useState("");
+  const [contestEndDate, setContestEndDate] = useState("");
+  const [contestStartTime, setContestStartTime] = useState("");
+  const [contestEndTime, setContestEndTime] = useState("");
+  const [type, setType] = useState("true"); // "true"/"false" string for select
 
+  // Password protection states
+  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // To prefill/isolate password toggling & protection from backend
   useEffect(() => {
     const fetchContestAndProblems = async () => {
       try {
-        const contestResponse = await axios.get<Contest>(`${API_URL}/contests/${id}`);
+        const contestResponse = await axios.get(`${API_URL}/contests/${id}`);
         const contest = contestResponse.data;
 
         setContestName(contest.name);
-        setType(contest.type);
-        // Use different variable names to avoid shadowing state setters
-        const formattedStartDate = toDateString(contest.startDate); // "YYYY-MM-DD"
-        const formattedEndDate = toDateString(contest.endDate);
+        setType(contest.type ? "true" : "false");
 
-        const formattedStartTime = contest.startTime?.slice(0, 5) || "";
+        // Date/time parsing
+        const toDateString = (iso: string) =>
+          iso ? new Date(iso).toISOString().slice(0, 10) : "";
 
-        const formattedEndTime = contest.endTime?.slice(0, 5) || "";
+        setContestStartDate(toDateString(contest.startDate));
+        setContestStartTime(contest.startTime?.slice(0, 5) || "");
+        setContestEndDate(toDateString(contest.endDate));
+        setContestEndTime(contest.endTime?.slice(0, 5) || "");
 
-        // Set formatted date and time strings in state
-        setContestStartDate(formattedStartDate);
-        setContestStartTime(formattedStartTime);
-        setContestEndDate(formattedEndDate);
-        setContestEndTime(formattedEndTime);
+        // Password-related (these field names should match backend, adjust if needed)
+        setIsPasswordProtected(contest.isPasswordProtected || false);
+        setPassword("");
+        setConfirmPassword("");
 
-        const problemsResponse = await axios.get<Problem[]>(`${API_URL}/problems`);
+        // Fetch all problems and set
+        const problemsResponse = await axios.get(`${API_URL}/problems`);
         const allProblems = problemsResponse.data;
         setExistingProblems(allProblems);
 
+        // Preselect those already in contest
         const selected = contest.problems
-          .map((cp) => allProblems.find((p) => p._id === cp.id))
-          .filter((p): p is Problem => p !== undefined);
-
+          .map((cp: { id: string }) => allProblems.find((p: Problem) => p._id === cp.id))
+          .filter((p: Problem | undefined): p is Problem => p !== undefined);
         setSelectedProblems(selected);
 
         setLoading(false);
@@ -96,7 +81,6 @@ const EditContest: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchContestAndProblems();
   }, [id]);
 
@@ -122,25 +106,37 @@ const EditContest: React.FC = () => {
       alert("Add at least one problem to the contest");
       return;
     }
+    if (!contestStartDate || !contestStartTime || !contestEndDate || !contestEndTime) {
+      alert("Start and End date/time must be set");
+      return;
+    }
+    if (isPasswordProtected) {
+      if (!password) {
+        alert("Password required.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+    }
 
     try {
-
-      // Format time as "HH:mm:ss" or null if empty
       const formattedStartTime = contestStartTime ? `${contestStartTime}:00` : null;
       const formattedEndTime = contestEndTime ? `${contestEndTime}:00` : null;
-
+      
+      // Construct payload
       const contestPayload = {
         name: contestName.trim(),
-        startDate: contestStartDate.toString(),  // send "YYYY-MM-DD" string
+        startDate: contestStartDate.toString(),
         startTime: formattedStartTime,
         endDate: contestEndDate.toString(),
         endTime: formattedEndTime,
         problems: selectedProblems.map((p) => ({ id: p._id! })),
-        type: type,
+        type,
+        isPasswordProtected,
+        password: isPasswordProtected ? password : undefined,
       };
-
-
-
       await axios.put(`${API_URL}/contests/${id}`, contestPayload);
       alert("Contest updated successfully");
       navigate("/contest");
@@ -149,8 +145,6 @@ const EditContest: React.FC = () => {
       alert("Failed to update contest");
     }
   };
-
-  if (loading) return <div>Loading contest data...</div>;
 
   const particlesInit = async (engine: Engine) => {
     try {
@@ -188,17 +182,25 @@ const EditContest: React.FC = () => {
     retina_detect: true,
   };
 
+  if (loading) return <div>Loading contest data...</div>;
+
   return (
     <div>
-      <Particles id="welcome-particles" init={particlesInit} options={particlesOptions} className="particles-container" />
+      <Particles id="edit-contest-particles" init={particlesInit} options={particlesOptions} className="particles-container" />
       <header className="header">
-        <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
-        <button onClick={() => { handleLogout(); navigate("/login"); }} style={{ marginRight: "30px" }}>
+        <h1 style={{ marginLeft: "120px" }}>Edit Contest ({contestName})</h1>
+        <button
+          onClick={() => {
+            handleLogout();
+            navigate("/login");
+          }}
+          style={{ marginRight: "30px" }}
+        >
           Logout
         </button>
       </header>
       <div className="container" style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
-        <h1>Edit Contest {contestName}</h1>
+        <h1>Edit Contest</h1>
 
         <label htmlFor="contestName" style={{ display: "block", marginBottom: 4 }}>
           Contest Name:
@@ -208,7 +210,7 @@ const EditContest: React.FC = () => {
           id="contestName"
           className="input-full"
           value={contestName}
-          onChange={(e) => setContestName(e.target.value)}
+          onChange={e => setContestName(e.target.value)}
           placeholder="Enter contest name"
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
@@ -221,7 +223,7 @@ const EditContest: React.FC = () => {
           id="contestStartDate"
           className="input-full"
           value={contestStartDate}
-          onChange={(e) => setContestStartDate(e.target.value)}
+          onChange={e => setContestStartDate(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
         <label htmlFor="contestStartTime" style={{ display: "block", marginBottom: 4 }}>
@@ -232,7 +234,7 @@ const EditContest: React.FC = () => {
           id="contestStartTime"
           className="input-full"
           value={contestStartTime}
-          onChange={(e) => setContestStartTime(e.target.value)}
+          onChange={e => setContestStartTime(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
 
@@ -244,7 +246,7 @@ const EditContest: React.FC = () => {
           id="contestEndDate"
           className="input-full"
           value={contestEndDate}
-          onChange={(e) => setContestEndDate(e.target.value)}
+          onChange={e => setContestEndDate(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
         <label htmlFor="contestEndTime" style={{ display: "block", marginBottom: 4 }}>
@@ -255,73 +257,89 @@ const EditContest: React.FC = () => {
           id="contestEndTime"
           className="input-full"
           value={contestEndTime}
-          onChange={(e) => setContestEndTime(e.target.value)}
+          onChange={e => setContestEndTime(e.target.value)}
           style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
         />
+
         <label htmlFor="type">Code Editor Type:</label>
         <select
           id="type"
           className="input-full"
-          value={type}                         
-          onChange={e => setType(e.target.value)} 
+          value={type}
+          onChange={e => setType(e.target.value)}
         >
           <option value="true">Random</option>
           <option value="false">Normal</option>
         </select>
 
-        <button className="add-problem-btn" onClick={() => navigate("/addProblem")}>
+        {/* Password protection section */}
+        <div style={{ margin: "20px 0" }}>
+          <label>Password Protected?</label>
+          <select
+            value={isPasswordProtected ? "yes" : "no"}
+            onChange={e => setIsPasswordProtected(e.target.value === "yes")}
+            style={{ marginBottom: 10, marginLeft: 10, padding: 8 }}
+          >
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        {isPasswordProtected && (
+          <div>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={{ marginBottom: 10, padding: 8, width: "100%" }}
+              required
+            />
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              style={{ marginBottom: 20, padding: 8, width: "100%" }}
+              required
+            />
+          </div>
+        )}
+
+        <button className="add-problem-btn" onClick={() => navigate("/addProblem")} style={{ marginBottom: 20 }}>
           Add New Problem
         </button>
 
         <h2>Manage Problems</h2>
-
         {existingProblems.length === 0 && <p>No problems available</p>}
-
-        <div
-          style={{
-            display: "flex",
-            fontWeight: "bold",
-            marginBottom: 12,
-            width: "100%",
-            borderBottom: "2px solid #ccc",
-            paddingBottom: 6,
-          }}
-        >
+        <div style={{ display: "flex", fontWeight: "bold", width: "100%", marginBottom: 10 }}>
           <div style={{ flex: 4 }}>Problem</div>
           <div style={{ flex: 2 }}>Difficulty</div>
           <div style={{ flex: 2 }}>Points</div>
           <div style={{ flex: 2 }}>Actions</div>
         </div>
-
-        <div
-          className="problem-list"
-          style={{
-            maxHeight: 300,
-            border: "1px solid #ddd",
-            padding: 10,
-            borderRadius: 4,
-          }}
-        >
+        <div className="problem-list" style={{ maxHeight: 300, border: "1px solid #ddd", padding: 10, borderRadius: 4 }}>
           {existingProblems.map((problem) => {
             const isSelected = selectedProblems.some((p) => p._id === problem._id);
             return (
               <div
                 key={problem._id}
                 className="problem-item"
-                style={{ display: "flex", alignItems: "center", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid #eee" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 8,
+                  paddingBottom: 6,
+                  borderBottom: "1px solid #eee"
+                }}
               >
                 <div style={{ flex: 4 }}>{problem.name}</div>
                 <div style={{ flex: 2, textTransform: "capitalize" }}>{problem.difficulty}</div>
                 <div style={{ flex: 2 }}>{problem.points}</div>
                 <div style={{ flex: 2 }}>
                   {isSelected ? (
-                    <button className="button-action" onClick={() => removeProblem(problem._id)} aria-label={`Remove problem ${problem.name}`}>
-                      Remove
-                    </button>
+                    <button className="button-action" onClick={() => removeProblem(problem._id)} aria-label={`Remove problem ${problem.name}`}>Remove</button>
                   ) : (
-                    <button className="button-action" onClick={() => addExistingProblem(problem)} aria-label={`Add problem ${problem.name}`}>
-                      Add
-                    </button>
+                    <button className="button-action" onClick={() => addExistingProblem(problem)} aria-label={`Add problem ${problem.name}`}>Add</button>
                   )}
                 </div>
               </div>
@@ -329,13 +347,13 @@ const EditContest: React.FC = () => {
           })}
         </div>
 
-        <button onClick={handleUpdate} className="button-action" style={{ marginTop: 20, padding: "10px 20px", fontSize: 16 }}>
+        <button onClick={handleUpdate} className="add-problem-btn" style={{ marginTop: 20 }}>
           Update Contest
         </button>
         <button
           type="button"
           className="button-action"
-          style={{ backgroundColor: "#eee", color: "#1245a4" }}
+          style={{ backgroundColor: "#eee", color: "#1245a4", marginTop: "10px" }}
           onClick={() => navigate(-1)}
         >
           Cancel

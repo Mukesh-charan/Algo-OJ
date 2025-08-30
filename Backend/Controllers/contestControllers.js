@@ -21,10 +21,10 @@ export const getContestById = async (req, res) => {
     }
 };
 export const createContest = async (req, res) => {
-    const { name, startDate, startTime, endDate, endTime, problems,type} = req.body;  // <-- get problems array here
+    const { name, startDate, startTime, endDate, endTime, problems,type, isPasswordProtected, password} = req.body;  // <-- get problems array here
 
     try {
-        const newContest = new Contest({ name, startDate, startTime, endDate, endTime, problems,type });  // save problems properly
+        const newContest = new Contest({ name, startDate, startTime, endDate, endTime, problems,type, isPasswordProtected, password });  // save problems properly
         await newContest.save();
         res.status(201).json(newContest);
     } catch (err) {
