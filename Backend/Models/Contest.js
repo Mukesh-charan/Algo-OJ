@@ -23,6 +23,7 @@ const ContestSchema = new mongoose.Schema({
   password: {
     type: String,
     required: function() { return this.isPasswordProtected; },
+  },
 });
 
 ContestSchema.pre('save', async function (next) {
