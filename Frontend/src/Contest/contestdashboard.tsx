@@ -156,7 +156,7 @@ const ContestDashboard: React.FC = () => {
               <div style={{ flex: 1 }}>End Time</div>
               <div style={{ flex: 2 }}>Actions</div>
             </div>
-            <div className="contest-list" style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
+            <div className="contest-list" style={{ display: "flex", flexDirection: "column" ,fontWeight: "bold", marginBottom: 12, width: "100%" }}>
               {filteredContests.map((contest) => (
                 <div
                   key={contest._id}
