@@ -25,12 +25,14 @@ interface ContestUser {
 interface Contest {
   _id: string;
   name: string;
-  startDate: string; // e.g. "2025-07-30"
-  startTime: string; // e.g. "14:00:00"
+  startDate: string;
+  startTime: string;
   endDate: string;
   endTime: string;
   users: ContestUser[];
-  type:string,
+  type: string;
+  isPasswordProtected: boolean;
+  password: string | "";
 }
 
 const Dashboard: React.FC = () => {
@@ -41,7 +43,12 @@ const Dashboard: React.FC = () => {
   const [contests, setContests] = useState<Contest[]>([]);
   const [loadingContests, setLoadingContests] = useState<boolean>(true);
   const [processingContestId, setProcessingContestId] = useState<string | null>(null);
-  
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [contestToStart, setContestToStart] = useState<Contest | null>(null);
+  const [passwordError, setPasswordError] = useState("");
+
+
 
   const userId = localStorage.getItem("_id") || ""; // adjust storage key as per your app
   const username = localStorage.getItem("username") || "";
@@ -90,7 +97,7 @@ const Dashboard: React.FC = () => {
       return user.id === userId;
     });
   };
-  
+
 
   const hasContestStarted = (contest: Contest) => {
     const now = new Date();
@@ -140,6 +147,17 @@ const Dashboard: React.FC = () => {
   };
 
   // You can adjust this to navigate or launch contest start
+  const onStartClick = (contest: Contest) => {
+    if (contest.isPasswordProtected) {
+      setContestToStart(contest);
+      setShowPasswordPrompt(true);
+      setPasswordInput("");
+      setPasswordError("");
+    } else {
+      handleStartContest(contest._id);
+    }
+  };
+
   const handleStartContest = (contestId: string) => {
     navigate(`/contest/${contestId}`);
   };
@@ -228,9 +246,9 @@ const Dashboard: React.FC = () => {
               if (started && registered) {
                 // Show Start button during contest running (between start and end)
                 actionButton = (
-                  <button 
-                    className="button-action" 
-                    onClick={() => handleStartContest(contest._id)}
+                  <button
+                    className="button-action"
+                    onClick={() => onStartClick(contest)}
                   >
                     Start
                   </button>
@@ -258,7 +276,7 @@ const Dashboard: React.FC = () => {
 
               return (
                 <div key={contest._id} style={{ display: "flex", alignItems: "center", marginBottom: 8, width: "100%" }}>
-                  <div style={{ flex: 3, fontWeight:"bold"}}>{contest.name}</div>
+                  <div style={{ flex: 3, fontWeight: "bold" }}>{contest.name}</div>
                   <div style={{ flex: 1 }}>{contest.startDate}</div>
                   <div style={{ flex: 1 }}>{contest.startTime}</div>
                   <div style={{ flex: 1 }}>{contest.endDate}</div>

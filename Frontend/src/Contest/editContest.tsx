@@ -290,16 +290,16 @@ const EditContest: React.FC = () => {
             <input
               type="password"
               value={password}
+              className="input-full"
               onChange={e => setPassword(e.target.value)}
-              style={{ marginBottom: 10, padding: 8, width: "100%" }}
               required
             />
             <label>Confirm Password:</label>
             <input
               type="password"
               value={confirmPassword}
+              className="input-full"
               onChange={e => setConfirmPassword(e.target.value)}
-              style={{ marginBottom: 20, padding: 8, width: "100%" }}
               required
             />
           </div>

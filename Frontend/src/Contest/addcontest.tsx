@@ -1,142 +1,194 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./dashboard.css";
 import { useNavigate } from "react-router-dom";
-import { handleLogout } from "../auth";
 import type { Engine, IOptions, RecursivePartial } from "tsparticles-engine";
 import { loadSlim } from "tsparticles-slim";
 import Particles from "react-tsparticles";
+import { handleLogout } from "../auth";
 
 const API_URL = `${import.meta.env.VITE_BACKEND}/api`;
 
 interface Problem {
-  _id?: string;
+  _id: string;
   name: string;
   difficulty: string;
   points: number;
-  problemStatement: string;
-  sampleInput: string[];
-  sampleOutput: string[];
+  visibility: boolean;
 }
 
-const AddContest: React.FC = () => {
+interface ContestUser {
+  id: string;
+  username: string;
+}
+
+interface Contest {
+  _id: string;
+  name: string;
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+  users: ContestUser[];
+  type: string;
+  isPasswordProtected: boolean;
+  password: string | "";
+}
+
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const [contestName, setContestName] = useState("");
-  const [selectedProblems, setSelectedProblems] = useState<Problem[]>([]);
-  const [existingProblems, setExistingProblems] = useState<Problem[]>([]);
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [search, setSearch] = useState("");
+  const [difficulty, setDifficulty] = useState("");
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loadingContests, setLoadingContests] = useState(true);
+  const [processingContestId, setProcessingContestId] = useState<string | null>(null);
 
-  // Date & time fields
-  const [contestStartDate, setContestStartDate] = useState("");
-  const [contestStartTime, setContestStartTime] = useState("");
-  const [contestEndDate, setContestEndDate] = useState("");
-  const [contestEndTime, setContestEndTime] = useState("");
-  const [type, setType] = useState<boolean>(true);
+  // Password prompt states
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [contestToStart, setContestToStart] = useState<Contest | null>(null);
+  const [passwordError, setPasswordError] = useState("");
 
-  // Password protection
-  const [isPasswordProtected, setIsPasswordProtected] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const userId = localStorage.getItem("_id") || "";
+  const username = localStorage.getItem("username") || "";
 
   useEffect(() => {
-    const fetchProblems = async () => {
-      try {
-        const res = await axios.get<Problem[]>(`${API_URL}/problems`);
-        setExistingProblems(res.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchProblems();
+    fetchContests();
   }, []);
 
-  const addExistingProblem = (problem: Problem) => {
-    if (selectedProblems.find(p => p._id === problem._id)) {
-      alert("Problem already added");
-      return;
-    }
-    setSelectedProblems(prev => [...prev, problem]);
-  };
-
-  const removeProblem = (problemId?: string) => {
-    if (!problemId) return;
-    setSelectedProblems(prev => prev.filter(p => p._id !== problemId));
-  };
-
-  const handleSubmit = async () => {
-    if (!contestName.trim()) {
-      alert("Contest name is required");
-      return;
-    }
-    if (selectedProblems.length === 0) {
-      alert("Add at least one problem");
-      return;
-    }
-    if (!contestStartDate || !contestStartTime || !contestEndDate || !contestEndTime) {
-      alert("Start and End date/time must be set");
-      return;
-    }
-    if (isPasswordProtected) {
-      if (!password) {
-        alert("Password required.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        alert("Passwords do not match.");
-        return;
-      }
-    }
-
+  const fetchProblems = async () => {
     try {
-      const startDateTime = new Date(`${contestStartDate}T${contestStartTime}`);
-      const endDateTime = new Date(`${contestEndDate}T${contestEndTime}`);
-
-      if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
-        alert("Invalid start or end date/time");
-        return;
-      }
-      if (startDateTime >= endDateTime) {
-        alert("End date/time must be after start date/time");
-        return;
-      }
-
-      // Post new problems
-      const postedProblems = await Promise.all(
-        selectedProblems.map(async prob => {
-          if (prob._id) return prob;
-          const response = await axios.post(`${API_URL}/problems`, {
-            name: prob.name,
-            difficulty: prob.difficulty,
-            points: prob.points,
-            problemStatement: prob.problemStatement,
-            sampleInput: prob.sampleInput,
-            sampleOutput: prob.sampleOutput,
-          });
-          return response.data;
-        })
-      );
-
-      // Contest payload
-      const contestPayload = {
-        name: contestName.trim(),
-        startDate: contestStartDate.toString(),
-        startTime: contestStartTime + ":00",
-        endDate: contestEndDate.toString(),
-        endTime: contestEndTime + ":00",
-        problems: postedProblems.map(p => ({ id: p._id })),
-        type: type,
-        isPasswordProtected,
-        password: isPasswordProtected ? password : undefined,
-      };
-
-      await axios.post(`${API_URL}/contests`, contestPayload);
-
-      alert("Contest and problems added successfully!");
-      navigate("/contest");
+      const res = await axios.get(`${API_URL}/problems`);
+      setProblems(res.data);
     } catch (error) {
-      console.error(error);
-      alert("Error adding contest or problems");
+      console.error("Failed to fetch problems:", error);
+      setProblems([]);
     }
   };
+
+  const fetchContests = async () => {
+    setLoadingContests(true);
+    try {
+      const res = await axios.get(`${API_URL}/contests`);
+      setContests(res.data);
+    } catch (error) {
+      console.error("Failed to fetch contests:", error);
+      setContests([]);
+    } finally {
+      setLoadingContests(false);
+    }
+  };
+
+  const parseContestDateTime = (dateStr: string, timeStr: string) =>
+    new Date(`${dateStr}T${timeStr}`);
+
+  const activeContests = contests.filter(contest => {
+    const now = new Date();
+    const endDateTime = parseContestDateTime(contest.endDate, contest.endTime);
+    return now < endDateTime;
+  });
+
+  const isUserRegistered = (contest: Contest) => {
+    if (!contest.users || contest.users.length === 0) return false;
+    return contest.users.some(user => user.id === userId);
+  };
+
+  const hasContestStarted = (contest: Contest) => {
+    const now = new Date();
+    const startDateTime = parseContestDateTime(contest.startDate, contest.startTime);
+    return now >= startDateTime;
+  };
+
+  const handleRegister = async (contestId: string) => {
+    if (!userId || !username) {
+      alert("You must be logged in to register for contests.");
+      navigate("/login");
+      return;
+    }
+    try {
+      setProcessingContestId(contestId);
+      await axios.post(`${API_URL}/contests/${contestId}/register`, { userId, username });
+      alert("Successfully registered for contest!");
+      await fetchContests();
+    } catch (error) {
+      console.error("Failed to register:", error);
+      alert("Failed to register for contest.");
+    } finally {
+      setProcessingContestId(null);
+    }
+  };
+
+  const handleUnregister = async (contestId: string) => {
+    if (!userId) {
+      alert("You must be logged in.");
+      navigate("/login");
+      return;
+    }
+    try {
+      setProcessingContestId(contestId);
+      await axios.post(`${API_URL}/contests/${contestId}/removeUser`, { userId });
+      alert("Successfully unregistered from contest!");
+      await fetchContests();
+    } catch (error) {
+      console.error("Failed to unregister:", error);
+      alert("Failed to unregister from contest.");
+    } finally {
+      setProcessingContestId(null);
+    }
+  };
+
+  // Handles final navigation once authorized
+  const handleStartContest = (contestId: string) => {
+    navigate(`/contest/${contestId}`);
+  };
+
+  // Handle start clicked: show password prompt if protected
+  const onStartClick = (contest: Contest) => {
+    if (contest.isPasswordProtected) {
+      setContestToStart(contest);
+      setShowPasswordPrompt(true);
+      setPasswordInput("");
+      setPasswordError("");
+    } else {
+      handleStartContest(contest._id);
+    }
+  };
+
+  const handleSolve = async (id: string) => {
+    try {
+      await axios.get(`${API_URL}/problems/${id}`);
+      navigate(`/codeEditor/${id}`);
+    } catch (error) {
+      console.error("Failed to solve problem:", error);
+    }
+  };
+
+  // Handle password verify submit
+  const handlePasswordSubmit = async (password: string) => {
+    if (!contestToStart) return;
+    try {
+      setPasswordError("");
+      const res = await axios.post(`${API_URL}/contests/${contestToStart._id}/verify-password`, { password });
+      if (res.data.valid) {
+        setShowPasswordPrompt(false);
+        handleStartContest(contestToStart._id);
+      } else {
+        setPasswordError("Incorrect password");
+      }
+    } catch (error) {
+      setPasswordError("Error verifying password");
+    }
+  };
+
+  // Filter problems as before
+  const filteredProblems = problems.filter(
+    problem =>
+      problem.name.toLowerCase().includes(search.toLowerCase()) &&
+      problem.difficulty.toLowerCase().includes(difficulty.toLowerCase())
+  );
 
   const particlesInit = async (engine: Engine) => {
     try {
@@ -172,159 +224,189 @@ const AddContest: React.FC = () => {
           Logout
         </button>
       </header>
-      <div className="container" style={{ maxWidth: 800, margin: "auto", padding: 20 }}>
-        <h1>Create Contest</h1>
-
-        <label htmlFor="contestName" style={{ display: "block", marginBottom: 4 }}>
-          Contest Name:
-        </label>
-        <input
-          type="text"
-          id="contestName"
-          className="input-full"
-          value={contestName}
-          onChange={e => setContestName(e.target.value)}
-          placeholder="Enter contest name"
-          style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
-        />
-
-        <label htmlFor="contestStartDate" style={{ display: "block", marginBottom: 4 }}>
-          Contest Start Date:
-        </label>
-        <input
-          type="date"
-          id="contestStartDate"
-          className="input-full"
-          value={contestStartDate}
-          onChange={e => setContestStartDate(e.target.value)}
-          style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
-        />
-        <label htmlFor="contestStartTime" style={{ display: "block", marginBottom: 4 }}>
-          Contest Start Time:
-        </label>
-        <input
-          type="time"
-          id="contestStartTime"
-          className="input-full"
-          value={contestStartTime}
-          onChange={e => setContestStartTime(e.target.value)}
-          style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
-        />
-
-        <label htmlFor="contestEndDate" style={{ display: "block", marginBottom: 4 }}>
-          Contest End Date:
-        </label>
-        <input
-          type="date"
-          id="contestEndDate"
-          className="input-full"
-          value={contestEndDate}
-          onChange={e => setContestEndDate(e.target.value)}
-          style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
-        />
-        <label htmlFor="contestEndTime" style={{ display: "block", marginBottom: 4 }}>
-          Contest End Time:
-        </label>
-        <input
-          type="time"
-          id="contestEndTime"
-          className="input-full"
-          value={contestEndTime}
-          onChange={e => setContestEndTime(e.target.value)}
-          style={{ marginBottom: 20, padding: 8, fontSize: 16, width: "100%" }}
-        />
-        <label htmlFor="type">Code Editor Type:</label>
-        <select
-          id="type"
-          className="input-full"
-          value={type ? "true" : "false"}
-          onChange={e => setType(e.target.value === "true")}
-        >
-          <option value="true">Random</option>
-          <option value="false">Normal</option>
-        </select>
-
-        {/* Password protection section */}
-        <div style={{ margin: "20px 0" }}>
-          <label>Password Protected?</label>
-          <select
-            value={isPasswordProtected ? "yes" : "no"}
-            onChange={e => setIsPasswordProtected(e.target.value === "yes")}
-            style={{ marginBottom: 10, marginLeft: 10, padding: 8 }}
-          >
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
-          </select>
-        </div>
-        {isPasswordProtected && (
-          <div>
-            <label>Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={{ marginBottom: 10, padding: 8, width: "100%" }}
-              required
-            />
-            <label>Confirm Password:</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              style={{ marginBottom: 20, padding: 8, width: "100%" }}
-              required
-            />
-          </div>
+      <div className="container">
+        {localStorage.getItem("userType") === "admin" && (
+          <button className="back-btn" onClick={() => navigate("/admindashboard")}>Back to Dashboard</button>
         )}
 
-        <button className="add-problem-btn" onClick={() => navigate("/addProblem")} style={{ marginBottom: 20 }}>
-          Add New Problem
-        </button>
+        <h2>Available Contests</h2>
+        {loadingContests ? (
+          <div>Loading contests...</div>
+        ) : activeContests.length === 0 ? (
+          <div>No contests available currently.</div>
+        ) : (
+          <>
+            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 12, width: "100%" }}>
+              <div style={{ flex: 3 }}>Contest Name</div>
+              <div style={{ flex: 1 }}>Start Date</div>
+              <div style={{ flex: 1 }}>Start Time</div>
+              <div style={{ flex: 1 }}>End Date</div>
+              <div style={{ flex: 1 }}>End Time</div>
+              <div style={{ flex: 1 }}>Coding Style</div>
+              <div style={{ flex: 2 }}>Action</div>
+            </div>
+            <div>
+              {activeContests.map(contest => {
+                const registered = isUserRegistered(contest);
+                const started = hasContestStarted(contest);
 
-        <h2>Select Problems</h2>
-        {existingProblems.length === 0 && <p>No existing problems to add</p>}
-
-        <div style={{ display: "flex", fontWeight: "bold", width: "100%", marginBottom: 10 }}>
-          <div style={{ flex: 4 }}>Problem</div>
-          <div style={{ flex: 2 }}>Difficulty</div>
-          <div style={{ flex: 2 }}>Points</div>
-          <div style={{ flex: 2 }}>Actions</div>
-        </div>
-
-        <div className="problem-list" style={{ maxHeight: 300, border: "1px solid #ddd", padding: 10, borderRadius: 4 }}>
-          {existingProblems.map(problem => {
-            const isSelected = selectedProblems.some(p => p._id === problem._id);
-            return (
-              <div key={problem._id} className="problem-item" style={{ display: "flex", alignItems: "center", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid #eee" }}>
-                <div style={{ flex: 4 }}>{problem.name}</div>
-                <div style={{ flex: 2, textTransform: "capitalize" }}>{problem.difficulty}</div>
-                <div style={{ flex: 2 }}>{problem.points}</div>
-                <div style={{ flex: 2 }}>
-                  {isSelected ? (
-                    <button className="button-action" onClick={() => removeProblem(problem._id)}>Remove</button>
+                let actionButton;
+                if (started && registered) {
+                  actionButton = (
+                    <button
+                      className="button-action"
+                      onClick={() => onStartClick(contest)}
+                    >
+                      Start
+                    </button>
+                  );
+                } else {
+                  actionButton = registered ? (
+                    <button
+                      className="button-action"
+                      onClick={() => handleUnregister(contest._id)}
+                      disabled={processingContestId === contest._id}
+                    >
+                      {processingContestId === contest._id ? "Processing..." : "Un-register"}
+                    </button>
                   ) : (
-                    <button className="button-action" onClick={() => addExistingProblem(problem)}>Add</button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                    <button
+                      className="button-action"
+                      onClick={() => handleRegister(contest._id)}
+                      disabled={processingContestId === contest._id}
+                    >
+                      {processingContestId === contest._id ? "Processing..." : "Register"}
+                    </button>
+                  );
+                }
+
+                return (
+                  <div
+                    key={contest._id}
+                    style={{ display: "flex", marginBottom: 12, width: "100%", fontWeight: "normal", alignItems: "center" }}
+                  >
+                    <div style={{ flex: 3 }}>{contest.name}</div>
+                    <div style={{ flex: 1 }}>{contest.startDate}</div>
+                    <div style={{ flex: 1 }}>{contest.startTime}</div>
+                    <div style={{ flex: 1 }}>{contest.endDate}</div>
+                    <div style={{ flex: 1 }}>{contest.endTime}</div>
+                    <div style={{ flex: 1 }}>{contest.type === "true" ? "Random" : "Normal"}</div>
+                    <div style={{ flex: 2 }}>{actionButton}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        <h2>Search Problems</h2>
+        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="search-bar"
+            placeholder="Search problems..."
+            style={{ flex: 5 }}
+          />
+          <select
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+            className="search-bar"
+            style={{ flex: 1 }}
+          >
+            <option value="">Select difficulty</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
         </div>
 
-        <button onClick={handleSubmit} className="add-problem-btn" style={{ marginTop: 20 }}>
-          Create Contest
-        </button>
-        <button
-          type="button"
-          className="button-action"
-          style={{ backgroundColor: "#eee", color: "#1245a4", marginTop: "10px" }}
-          onClick={() => navigate(-1)}
-        >
-          Cancel
-        </button>
+        {filteredProblems.length === 0 ? (
+          <div>No problems found.</div>
+        ) : (
+          <>
+            <div style={{ display: "flex", fontWeight: "bold", marginBottom: 8, width: "100%" }}>
+              <div style={{ flex: 5 }}>Problem</div>
+              <div style={{ flex: 2 }}>Difficulty</div>
+              <div style={{ flex: 2 }}>Actions</div>
+            </div>
+            <div>
+              {filteredProblems
+                .filter(problem => problem.visibility)
+                .map(problem => (
+                  <div
+                    key={problem._id}
+                    style={{ display: "flex", marginBottom: 8, width: "100%", fontWeight: "normal", alignItems: "center" }}
+                  >
+                    <div style={{ flex: 5 }}>{problem.name}</div>
+                    <div style={{ flex: 2, textTransform: "capitalize" }}>{problem.difficulty}</div>
+                    <div style={{ flex: 2 }}>
+                      <button className="button-action" onClick={() => handleSolve(problem._id)}>Solve</button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+
+        {showPasswordPrompt && contestToStart && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 1000,
+            }}
+          >
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                handlePasswordSubmit(passwordInput);
+              }}
+              style={{
+                backgroundColor: "white",
+                padding: 24,
+                borderRadius: 8,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                width: 320,
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+              }}
+            >
+              <h3 style={{ margin: 0, marginBottom: 8 }}>
+                Enter password for "{contestToStart.name}"
+              </h3>
+              <input
+                type="password"
+                value={passwordInput}
+                placeholder="Password"
+                onChange={e => setPasswordInput(e.target.value)}
+                style={{
+                  padding: 8, fontSize: 16, borderRadius: 4, border: "1px solid #ccc",
+                }}
+                autoFocus
+              />
+              {passwordError && (
+                <div style={{ color: "red", fontSize: 14 }}>{passwordError}</div>
+              )}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                <button type="button" onClick={() => setShowPasswordPrompt(false)} style={{ padding: "8px 12px" }}>
+                  Cancel
+                </button>
+                <button type="submit" disabled={passwordInput.length === 0} style={{ padding: "8px 12px" }}>
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default AddContest;
+export default Dashboard;

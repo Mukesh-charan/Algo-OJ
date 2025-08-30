@@ -151,7 +151,6 @@ export const updateContest = async (req, res) => {
       return res.status(404).json({ message: 'Contest not found' });
     }
 
-    // Update fields
     contest.name = name;
     contest.startDate = startDate;
     contest.startTime = startTime;
@@ -161,7 +160,6 @@ export const updateContest = async (req, res) => {
     contest.type = type;
     contest.isPasswordProtected = !!isPasswordProtected;
 
-    // Handle password changes
     if (contest.isPasswordProtected) {
       if (!password || password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
