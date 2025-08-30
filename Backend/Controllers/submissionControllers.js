@@ -5,7 +5,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 const COMPILER_API_URL = process.env.COMPILER_API_URL
 
+
 export const createSubmission = async (req, res) => {
+  console.log(COMPILER_API_URL)
+  console.log("started")
   const {
     problemId,
     contestId,
