@@ -1,6 +1,5 @@
 import Submission from "../Models/Submission.js";
 import Problem from "../Models/Problem.js";
-const axios = require('axios');
 import axios from "axios";
 const COMPILER_API_URL = process.env.COMPILER_API_URL
 
