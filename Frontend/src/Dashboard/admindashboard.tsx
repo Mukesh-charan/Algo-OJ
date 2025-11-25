@@ -112,17 +112,17 @@ const AdminDashboard = () => {
         <div className="container">
           <h1>Admin Dashboard</h1>
           <div style={{ display: "flex", gap: "100px", width: "100%" }}>
-            <button style={{ flex: 1 }} onClick={() => navigate("/problemDashboard")}><h2 style={{ color: "white" }}>Problem Management</h2></button>
-            <button style={{ flex: 1 }} onClick={() => navigate("/userDashboard")}><h2 style={{ color: "white" }}>User Management</h2></button>
+            <button style={{ flex: 1 }} onClick={() => navigate("/problemDashboard")}><h2 style={{ color: "black" }}>Problem Management</h2></button>
+            <button style={{ flex: 1 }} onClick={() => navigate("/userDashboard")}><h2 style={{ color: "black" }}>User Management</h2></button>
           </div>
           <div style={{ display: "flex", gap: "100px", width: "100%", marginTop: "20px" }}>
-            <button style={{ flex: 1 }} onClick={() => navigate("/contest")}><h2 style={{ color: "white" }}>Contest Management</h2></button>
-            <button onClick={toggleAiStatus} style={{flex:1}}><h2 style={{ color: "white" }}>
+            <button style={{ flex: 1 }} onClick={() => navigate("/contest")}><h2 style={{ color: "black" }}>Contest Management</h2></button>
+            <button onClick={toggleAiStatus} style={{flex:1}}><h2 style={{ color: "black" }}>
               {aiEnabled ? "Disable AI" : "Enable AI"}</h2>
             </button>
           </div>
           <div style={{ display: "flex", gap: "100px", width: "100%", marginTop: "20px" }}>
-            <button style={{ flex: 1 }} onClick={() => navigate("/")}><h2 style={{ color: "white" }}>Console</h2></button>
+            <button style={{ flex: 1 }} onClick={() => navigate("/")}><h2 style={{ color: "black" }}>Console</h2></button>
           </div>
         </div>
       </div>
