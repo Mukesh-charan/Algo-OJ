@@ -350,40 +350,38 @@ const CodeEditor: React.FC = () => {
     try {
       const newSampleIO = [...sampleIO];
       const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
-  
-      // Prepare payload for backend
-      const payload = {
-        language,
-        code: orderedCode,
-        sampleIO: newSampleIO.map((io) => ({ input: io.input || "", output: io.output || "" })),
-        customInput: customInput.trim(),
-      };
-  
-      // Call backend /run endpoint
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND}/run`, payload);
-      const backendResult = response.data;
-  
-      // Update frontend with results
-      if (backendResult.sampleResults && Array.isArray(backendResult.sampleResults)) {
-        backendResult.sampleResults.forEach((result: { yourOutput: string }, i: number) => {
-          newSampleIO[i].yourOutput = result.yourOutput;
-        });
-        setSampleIO(newSampleIO);
+      for (let i = 0; i < newSampleIO.length; i++) {
+        const input = newSampleIO[i].input || "";
+        const payload = {
+          language,
+          code: orderedCode,
+          input,
+        };
+        const response = await axios.post(`${COMPILER_API_URL}run`, payload);
+        const result = response.data;
+        newSampleIO[i].yourOutput =
+          typeof result === "string" ? result : JSON.stringify(result);
       }
-  
+      setSampleIO(newSampleIO);
+
       setHasRun(true);
-  
-      // Highlight first failed sample (if any)
+
       const firstFailIdx = newSampleIO.findIndex(
         (test) => (test.yourOutput || "").trim() !== (test.output || "").trim()
       );
       if (firstFailIdx !== -1) {
         setSelectedTab(firstFailIdx);
       }
-  
-      // Set custom output
-      if (backendResult.customOutput) {
-        setOutput(backendResult.customOutput);
+
+      if (customInput.trim() !== "") {
+        const payload = {
+          language,
+          code:orderedCode,
+          input: customInput,
+        };
+        const response = await axios.post(`${COMPILER_API_URL}run`, payload);
+        const result = response.data;
+        setOutput(typeof result === "string" ? result : JSON.stringify(result));
       } else {
         setOutput("");
       }
