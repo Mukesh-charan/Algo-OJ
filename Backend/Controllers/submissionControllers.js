@@ -102,7 +102,65 @@ export const createSubmission = async (req, res) => {
 };
 
 
+export const runCode = async (req, res) => {
+  try {
+    const { language, code, sampleIO, customInput } = req.body;
 
+    const sampleResults = [];
+    let customOutput = "";
+
+    for (const tc of sampleIO) {
+      const payload = {
+        language,
+        code,
+        input: tc.input,
+      };
+      const response = await axios.post(`${process.env.COMPILER_API_URL}run`, payload);
+      const result = response.data;
+
+      let output = "";
+      if (typeof result === "string") {
+        output = result;
+      } else if (result.output) {
+        output = result.output;
+      } else if (result.stdout) {
+        output = result.stdout;
+      } else {
+        output = JSON.stringify(result);
+      }
+
+      sampleResults.push({ yourOutput: output });
+    }
+
+    if (customInput) {
+      const payload = {
+        language,
+        code,
+        input: customInput,
+      };
+      const response = await axios.post(`${process.env.COMPILER_API_URL}run`, payload);
+      const result = response.data;
+
+      if (typeof result === "string") {
+        customOutput = result;
+      } else if (result.output) {
+        customOutput = result.output;
+      } else if (result.stdout) {
+        customOutput = result.stdout;
+      } else {
+        customOutput = JSON.stringify(result);
+      }
+    }
+
+    res.json({
+      sampleResults,
+      customOutput,
+    });
+  } catch (error) {
+    console.error("Error running code:", error);
+    res.status(500).json({ error: "Failed to run code" });
+  }
+};
 
 export const getSubmissions = async (req, res) => {
   try {
