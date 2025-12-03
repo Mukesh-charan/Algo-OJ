@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { createSubmission, getSubmissionById, getSubmissions, deleteSubmission, getSubmissionsByContestId, getSubmissionsByUserID, runCode } from "../Controllers/submissionControllers.js";
+import { createSubmission, getSubmissionById, getSubmissions, deleteSubmission, getSubmissionsByContestId, getSubmissionsByUserID } from "../Controllers/submissionControllers.js";
 
 router.post('/', createSubmission);
 
@@ -13,7 +13,5 @@ router.get('/contest/:contestId/submissions',getSubmissionsByContestId);
 router.post('/usersubmission',getSubmissionsByUserID);
 
 router.delete('/delete/:id',deleteSubmission);
-
-router.post('/run', runCode);
 
 export default router;
