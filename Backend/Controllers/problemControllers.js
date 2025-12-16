@@ -2,13 +2,14 @@ import Problem from '../Models/Problem.js';
 
 export const getProblems = async (req, res) => {
   try {
-    // Query all problems excluding 'testcases' field
-    const problems = await Problem.find().select("-testcases");
+    // Query problems with visibility=true, excluding 'testcases' field
+    const problems = await Problem.find({ visibility: true }).select("-testcases");
     res.json(problems);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 export const getProblemById = async (req, res) => {
   try {
