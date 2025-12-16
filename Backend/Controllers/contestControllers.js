@@ -10,6 +10,52 @@ export const getContests = async (req, res) => {
   }
 };
 
+export const getContests_user = async (req, res) => {
+  try {
+    const now = new Date();
+    // Format now as a string: YYYY-MM-DD HH:MM:SS
+    const nowDate = now.toISOString().split('T')[0];
+    const nowTime = now.toTimeString().split(' ')[0];
+
+    const contests = await Contest.find({
+      $expr: {
+        $and: [
+          {
+            $or: [
+              // Case 1: start date < now OR (start date == now and start time <= now)
+              { $lt: [{ $concat: ["$startDate", " ", "$startTime"] }, { $concat: [nowDate, " ", nowTime] }] },
+              {
+                $and: [
+                  { $eq: ["$startDate", nowDate] },
+                  { $lte: ["$startTime", nowTime] }
+                ]
+              }
+            ]
+          },
+          {
+            $or: [
+              // Case 2: end date > now OR (end date == now and end time >= now)
+              { $gt: [{ $concat: ["$endDate", " ", "$endTime"] }, { $concat: [nowDate, " ", nowTime] }] },
+              {
+                $and: [
+                  { $eq: ["$endDate", nowDate] },
+                  { $gte: ["$endTime", nowTime] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    });
+
+    res.json(contests);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
 export const getContestById = async (req, res) => {
   try {
     const contest = await Contest.findById(req.params.id);
