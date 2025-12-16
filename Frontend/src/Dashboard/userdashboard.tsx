@@ -61,7 +61,7 @@ const Dashboard: React.FC = () => {
 
   const fetchProblems = async () => {
     try {
-      const res = await axios.get(`${API_URL}/problems`);
+      const res = await axios.get(`${API_URL}/problems/user`);
       setProblems(res.data);
     } catch (error) {
       console.error("Failed to fetch problems:", error);
