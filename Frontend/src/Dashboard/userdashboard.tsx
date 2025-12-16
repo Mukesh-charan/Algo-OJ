@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
   const fetchContests = async () => {
     setLoadingContests(true);
     try {
-      const res = await axios.get(`${API_URL}/contests`);
+      const res = await axios.get(`${API_URL}/contests/user`);
       setContests(res.data);
     } catch (error) {
       console.error("Failed to fetch contests:", error);

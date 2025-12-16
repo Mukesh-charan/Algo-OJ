@@ -1,8 +1,10 @@
 import express from 'express';
 const router = express.Router();
-import { getContests, createContest, updateContest, deleteContest, getContestById, registerUserToContest,verifyContestPassword, removeUserFromContest } from '../Controllers/contestControllers.js';
+import { getContests, getContests_user, createContest, updateContest, deleteContest, getContestById, registerUserToContest,verifyContestPassword, removeUserFromContest } from '../Controllers/contestControllers.js';
 
 router.get('/', getContests);
+
+router.get('/', getContests_user);
 
 router.post('/', createContest);
 
