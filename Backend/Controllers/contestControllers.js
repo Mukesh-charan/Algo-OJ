@@ -3,11 +3,7 @@ import mongoose from "mongoose";
 
 export const getContests = async (req, res) => {
   try {
-    const now = new Date(); // Get the current time
-    const contests = await Contest.find({
-      start: { $lt: now },
-      end: { $gt: now }
-    });
+    const contests = await Contest.find();
     res.json(contests);
   } catch (err) {
     res.status(500).json({ message: err.message });
