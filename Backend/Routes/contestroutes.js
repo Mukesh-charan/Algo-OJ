@@ -4,7 +4,7 @@ import { getContests, getContests_user, createContest, updateContest, deleteCont
 
 router.get('/', getContests);
 
-router.get('/', getContests_user);
+router.get('/user', getContests_user);
 
 router.post('/', createContest);
 
