@@ -172,6 +172,8 @@ const Dashboard: React.FC = () => {
       setPasswordError("");
       const res = await axios.post(`${API_URL}/contests/${contestToStart._id}/verify-password`, { password });
       if (res.data.valid) {
+        // Mark that this user has access to this specific contest
+        localStorage.setItem(`contestAccess_${contestToStart._id}`, "true");
         setShowPasswordPrompt(false);
         handleStartContest(contestToStart._id);
       } else {

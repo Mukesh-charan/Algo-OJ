@@ -16,7 +16,7 @@ import AddContest from './Contest/addcontest.tsx';
 import EditContest from './Contest/editContest.tsx';
 import ContestProblemDashboard from './Contest/contestproblem.tsx';
 import LeaderboardPage from "../src/Contest/Leaderboard.tsx";
-import { ProtectedRoute, RoleProtectedRoute } from './auth.tsx';
+import { ProtectedRoute, RoleProtectedRoute, ContestProtectedRoute } from './auth.tsx';
 import MultipleLogin from './Login/MultipleLogin.tsx';
 
 
@@ -101,9 +101,9 @@ export default function App() {
       <Route
         path="/contest/:id/leaderboard"
         element={
-          <ProtectedRoute>
+          <ContestProtectedRoute>
             <LeaderboardPage />
-          </ProtectedRoute>
+          </ContestProtectedRoute>
         }
       />
       <Route
@@ -117,17 +117,17 @@ export default function App() {
       <Route
         path="/contest/:contestId/codeEditor/:id"
         element={
-          <ProtectedRoute>
+          <ContestProtectedRoute>
             <CodeEditor />
-          </ProtectedRoute>
+          </ContestProtectedRoute>
         }
       />
       <Route
         path="/contest/:id"
         element={
-          <ProtectedRoute>
+          <ContestProtectedRoute>
             <ContestProblemDashboard />
-          </ProtectedRoute>
+          </ContestProtectedRoute>
         }
       />
 

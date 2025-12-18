@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,6 +8,10 @@ interface ProtectedRouteProps {
 interface RoleProtectedRouteProps {
   children: React.ReactNode;
   role: string;
+}
+
+interface ContestProtectedRouteProps {
+  children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactElement {
@@ -33,6 +37,30 @@ export function RoleProtectedRoute({ children, role }: RoleProtectedRouteProps):
 
   return <>{children}</>;
 }
+
+export function ContestProtectedRoute({ children }: ContestProtectedRouteProps): React.ReactElement {
+  const { id, contestId } = useParams();
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const contestKey = id || contestId;
+
+  if (!contestKey) {
+    return <Navigate to="/" replace />;
+  }
+
+  const hasAccess = localStorage.getItem(`contestAccess_${contestKey}`);
+
+  if (!hasAccess) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 export function handleLogout() {
   localStorage.clear();
 };
