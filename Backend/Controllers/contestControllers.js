@@ -13,7 +13,6 @@ export const getContests = async (req, res) => {
 export const getContests_user = async (req, res) => {
   try {
     const now = new Date();
-    // Format now as a string: YYYY-MM-DD HH:MM:SS
     const nowDate = now.toISOString().split('T')[0];
     const nowTime = now.toTimeString().split(' ')[0];
 
