@@ -232,26 +232,9 @@ const Dashboard: React.FC = () => {
       <Particles id="welcome-particles" init={particlesInit} options={particlesOptions} className="particles-container" />
       <header className="header">
         <h1 style={{ marginLeft: "120px" }}>Random(Compile)</h1>
-        {localStorage.getItem("token") ? (
-          <button
-            onClick={() => {
-              handleLogout();
-              navigate("/login");
-            }}
-            style={{ marginRight: "30px" }}
-          >
-            Logout
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              navigate("/login");
-            }}
-            style={{ marginRight: "30px" }}
-          >
-            Login
-          </button>
-        )}
+        <button onClick={() => { handleLogout(); navigate("/login"); }} style={{ marginRight: "30px" }}>
+          Logout
+        </button>
       </header>
       <div className="container">
         {localStorage.getItem("userType") === "admin" && (
