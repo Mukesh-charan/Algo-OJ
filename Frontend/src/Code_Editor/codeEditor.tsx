@@ -73,6 +73,7 @@ const CodeEditor: React.FC = () => {
   const [customInput, setCustomInput] = useState("");
   const [output, setOutput] = useState("");
   const [hasRun, setHasRun] = useState(false);
+  const [semicolonWarning, setSemicolonWarning] = useState<string | null>(null);
   const [randomOrder, setRandomOrder] = useState<number[]>([]);
   const [codeLines, setCodeLines] = useState<String[]>([])
   const [selectedTab, setSelectedTab] = useState(0);
@@ -346,6 +347,8 @@ const CodeEditor: React.FC = () => {
 
   // Example stub of your run and submit handlers to show disable buttons (You should implement or reuse your full functions)
   const handleRunCode = async () => {
+    // Running code is allowed even if semicolon rule is violated
+    setSemicolonWarning(null);
     setIsRunning(true);
     try {
       const newSampleIO = [...sampleIO];
@@ -399,6 +402,30 @@ const CodeEditor: React.FC = () => {
       alert("No code to submit!");
       return;
     }
+
+    // Reset previous warning
+    setSemicolonWarning(null);
+
+    // Apply semicolon-per-line rule on the logically ordered code
+    const orderedCode = isRandomOrder ? reorderToOriginal(code, randomOrder) : code;
+    const lines = orderedCode.split("\n");
+    const violatingLines: number[] = [];
+
+    lines.forEach((line, idx) => {
+      const semicolonCount = (line.match(/;/g) || []).length;
+      if (semicolonCount > 2) {
+        violatingLines.push(idx + 1); // 1-based line numbers
+      }
+    });
+
+    if (violatingLines.length > 0) {
+      setSemicolonWarning(
+        `Submission blocked: line${violatingLines.length > 1 ? "s" : ""} ` +
+          `${violatingLines.join(", ")} contain more than 2 ';' characters. ` +
+          "Please split your code across multiple lines."
+      );
+      return;
+    }
   
     setIsSubmitting(true);
   
@@ -407,7 +434,7 @@ const CodeEditor: React.FC = () => {
         problemId,
         contestId: contestId || null,
         language,
-        code: isRandomOrder ? reorderToOriginal(code, randomOrder) : code,
+        code: orderedCode,
         userId: localStorage._id || "",
         userName: localStorage.username || "",
         problemName: name,
@@ -682,8 +709,9 @@ const CodeEditor: React.FC = () => {
             theme="vs-dark"
             value={code}
             onChange={(value) => {
-              setCode(value || "");
-              handleEditorChange;
+              const safeValue = value || "";
+              setCode(safeValue);
+              handleEditorChange(safeValue);
             }}
 
             options={{
@@ -704,6 +732,22 @@ const CodeEditor: React.FC = () => {
             }}
           />
         </div>
+
+        {/* Semicolon rule warning (submit-only) */}
+        {semicolonWarning && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "8px 12px",
+              borderRadius: 6,
+              backgroundColor: "#ffebee",
+              color: "#c62828",
+              fontSize: 14,
+            }}
+          >
+            {semicolonWarning}
+          </div>
+        )}
 
         {/* Run and Submit Buttons */}
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
