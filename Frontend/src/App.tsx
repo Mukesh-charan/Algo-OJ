@@ -117,9 +117,7 @@ export default function App() {
       <Route
         path="/contest/:contestId/codeEditor/:id"
         element={
-          <ContestProtectedRoute>
             <CodeEditor />
-          </ContestProtectedRoute>
         }
       />
       <Route
