@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs "NodeJS"   // Make sure NodeJS tool is configured in Jenkins
-    }
-
     environment {
         FRONTEND_DIR = "Frontend"
     }
@@ -17,10 +13,17 @@ pipeline {
             }
         }
 
+        stage('Check Node Version') {
+            steps {
+                sh 'node -v'
+                sh 'npm -v'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 dir("${FRONTEND_DIR}") {
-                    sh 'npm ci'
+                    sh 'npm install'
                 }
             }
         }
